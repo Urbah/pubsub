@@ -1,0 +1,64 @@
+<%- include("../partials/header") %>
+<div class="container pt-2">
+    <% if(error){%>
+        <% error.forEach(function(e){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= e.text %>
+                <button type="button" class='close btn' data-dismiss='alert' aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+    <% })} %>
+
+    <form action="/register" method="POST" >
+        <div class="mb-3">
+            <label for="exampleInputEmail1" class="form-label">Username</label>
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="username">
+        </div>
+        <div class="mb-3">
+            <label for="exampleInputPassword1" class="form-label">Password</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" name="password">
+        </div>
+        <fieldset class="row mb-3">
+            <legend class="col-form-label col-sm-2 pt-0">Radios</legend>
+            <div class="col-sm-10">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="role" id="gridRadios1" value="publisher" >
+                    <label class="form-check-label" for="gridRadios1">
+                        publisher
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="role" id="gridRadios2" value="reader" checked>
+                    <label class="form-check-label" for="gridRadios2">
+                        reader
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+        <div class="form-check">
+            <h3 class="form-check-label" >
+                Topic available
+            </h3>
+            <input class="form-check-input" type="checkbox" name="topics" id="exampleRadios1" value="topic1" checked>
+            <label class="form-check-label" for="exampleRadios1">
+                topic-1
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="topics" value="topic2" id="flexCheckDefault" checked>
+            <label class="form-check-label" for="flexCheckDefault">
+                topic-2
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="topics" value="topic3" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+                topic-3
+            </label>
+          </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+<%- include("../partials/footer") %>
+    
