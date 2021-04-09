@@ -1,3 +1,33 @@
+var timer;
+var noticias = [
+  {
+  "title" : "Atencion noticia regional",
+  "topic" : "regional",
+  "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "nombre_publicador" : "Luis Sandoval"
+  },
+  {"title" : "Ahora en las noticias Nacionales",
+  "topic" : "nacional",
+  "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "nombre_publicador" : "Maria Urbaneja"},
+  
+  {"title" : " Las noticias internacional estan de moda",
+  "topic" : "internacional",
+  "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur",
+  "nombre_publicador" : "Rodrigo Morales"},
+  ]
+
+var usuario = null;
+var post = {
+  "title": "esto es una prueba",
+  "topic" : "regional",
+  "description": "te amo curruncho",
+  "author" : {	
+    
+  "username": "luisana"
+	}
+}
+
 class PubSubClient {
   constructor (url, options = {connect: true, reconnect: true}) {
 
@@ -37,7 +67,7 @@ class PubSubClient {
 
   //Un Subscribe a topic, no longer receive new message of the topic
   unsubscribe (topic) {
-
+    
     const subscription = this._subscriptions.find((sub) => sub.topic === topic)
 /*
     if (subscription && subscription.listener) {
@@ -87,6 +117,8 @@ class PubSubClient {
     })
   }
 
+  
+
   //Publish a message to the topic and send to everyone, not me
   broadcast (topic, message) {
     this.send({
@@ -125,8 +157,39 @@ class PubSubClient {
         type: 'message',
         payload: message,
       })*/
+      console.log("aaaaaaaaaaaaaaaaaa")
     }
   }
+
+ showNoticiaPublicador(data){
+    $( "#post_noticias_suscrito" ).prepend(  
+      ` <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm p-3 mb-5 bg-body rounded">
+                        <div class="card-body">
+                          <h5 class="card-title pb-1">` + data.title + ` </h5>
+                          <h6 class="card-subtitle mb-2 text-muted">` + data.topic + `</h6>
+                          <p class="card-text">` + data.description + `</p>
+                        </div>
+                        <div class="card-footer ">
+                          <div>
+                              <div class="row ">
+                                <div class="col-6">
+                                    <h6><i class="bi bi-person p-1"></i>` + data.nombre_publicador + `</h6>
+                                </div>
+                                <div class="col-4">
+                                    <h6><i class="bi bi-clock p-1"></i>1 min</h6> 
+                                </div>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                </div>
+             </div>
+    
+    
+             ` );
+}
 /*
   //Run Queue after connecting successful
   runQueue () {
@@ -180,42 +243,43 @@ class PubSubClient {
     this._ws = ws
 
     // clear timeout of reconnect
-    if (this._reconnectTimeout) {
+      if (this._reconnectTimeout) {
       clearTimeout(this._reconnectTimeout)
-    }
+      }
 
-    ws.onopen = () => {
+     ws.onopen = () => {
       // change status of connected
       this._connected = true
       this._isReconnecting = false
 
+      // aqui deberia de haber un get de lo que manda del servidor para suscribrise a los topicos
       console.log('Connected to the server')
       this.send({action: 'me'})
+
       // run queue
       /*this.runQueue()
 
       this.runSubscriptionQueue()
-*/
-    }
-    // listen a message from the server
-    ws.onmessage = (message) => {
-
+      */
+      }
+     // listen a message from the server
+     ws.onmessage = (message) => {
       const jsonMessage = this.stringToJson(message.data)
-
       const action = jsonMessage.action
       const payload = jsonMessage.payload
 
       switch (action) {
         case 'me':
           this._id = payload.id
-          console.log('payload.id '+ payload.id )
+          //console.log('payload.id '+ payload.id )
           break
 
         case 'publish':
-          console.log(`subscribe_topic_${payload.topic}`, payload.message)
+         // console.log(`subscribe_topic_${payload.topic}`, payload.message)
+         this.showNoticiaPublicador(payload.message)
           // let emit this to subscribers
           break
- 
+       
         default:
           break
       }
@@ -247,52 +311,187 @@ class PubSubClient {
 }
 
 $(function() {
+
+
   const pubSub = new PubSubClient('ws://localhost:3000', {
     connect: true,
     reconnect: true,
   })
-/*
-  $.ajax({
-    url: '/data',
-    success: (data)=>{
-      console.log('nueva data')
-      console.log(data)
-    }
-  })
-*/
-/*
-  function sbc(){
-      let topics= ['topic-1','topic-2','topic-3']
+ 
+ 
+// aca poner una funcion que agarre todos los post de los que se ha suscrito 
+
+ 
+  function sbc(data){
+      let topics= data
+      let message
+      console.log(topics)
       topics.forEach(e=>{
+        console.log(e)
           pubSub.subscribe(e, (message) => {
             console.log(`Got message from topic ${e}`, message)
         })
       })
+
+      cambiarEstadoInicial(usuario.topics)
+     
   };
-  setTimeout(sbc, 3000);
+  
+  $.ajax({ 
+    url: '/data',
+    success:(data)=>{
+      usuario = data
+      console.log('nueva data', usuario)
+      console.log('nueva data', usuario.topics)  
+      setTimeout(sbc,3000,usuario.topics)
+       }
+  })
+ 
+ 
+
+ function guardarNoticia(data){
+  
+  $.ajax({ 
+    url: `/noticia`,
+    type : "POST",
+    data : data,
+    
+    /*data.title,
+            topic: data.topic,
+            description: data.description,
+            author:{
+		            id:{
+			              ref:'User'
+    	              },
+             username: data.author.username
+	        },*/
+    success : console.log("ok") 
+  })
+ } 
+
+
+
+ $("#help").click(function(){
+ console.log("tienes que borar esta funcion")
+
+ })
+
   //publish a message to topic
-  */
-  let topicName = 'topic-2'
-  pubSub.publish(topicName,
-    {title: 'Hello subscribers in the topic abc', body: 'How are you ?'})
+
+
+ // let topicName = 'topic-2'
+  //pubSub.publish(topicName,
+   // {title: 'Hello subscribers in the topic abc', body: 'How are you ?'})
 
   // Broadcast send message to subscribers but not me
-  pubSub.broadcast(topicName, {body: 'this is broadcast message'})
+  //pubSub.broadcast(topicName, {body: 'this is broadcast message'})
 
   // Make global for console access
   window.ps = pubSub
   console.log("conectado");
   //Dom elements
-  const $btn_subscribe_topic_1= $('#btn-topic-1');
-  const $btn_subscribe_topic_2= $('#btn-topic-2');
-
+  //const $btn_subscribe_topic_1= $('#btn-topic-1');
+  //const $btn_subscribe_topic_2= $('#btn-topic-2');
+ 
+ 
   //events
-  $btn_subscribe_topic_1.click(e=>{
+ /* $btn_subscribe_topic_1.click(e=>
+    {
+
     console.log('pasa por aca 1')
     let topic=  $btn_subscribe_topic_1.val()
-    pubSub.subscribe(topic, (msg)=>{
+    subscribe(topic, (msg)=>{
       console.log('se ha subscrito a '+ msg)
     })
-  }) 
+  }) */
 
+  // 
+  //Cambiar estado de las suscripciones cuando empieza la pagina
+
+   function cambiarEstadoInicial(usuario){
+    if (usuario){
+        usuario.forEach(e=>{
+        let b = $('#'+ e).text();
+        if (b === "Seguir")
+          $('#'+ e).text("Dejar de seguir");
+        if (b === "Dejar de seguir")
+          $('#'+ e).text("Seguir");
+        })
+     }
+   }
+
+
+function ajax(parametro ,topico){
+
+  $.ajax({ 
+    url: `/modificar/${usuario._id} `,
+    type : "PUT",
+    data : {topic: topico , action:parametro},
+    
+    success: console.log("ok")
+    
+  })
+}
+
+
+  $(".estado").click(function(){
+  
+    var estado = $(this).text();
+    const nombre_topico = $(this).val()
+
+    if (estado == "Seguir"){
+       pubSub.subscribe(nombre_topico, (msg)=>{
+       console.log('se ha subscrito a '+ msg)
+     })
+     ajax("agregar", nombre_topico)
+     $(this).text("Dejar de seguir");
+     
+    }
+  
+    else{
+    console.log("estoy en el else")
+    pubSub.unsubscribe(nombre_topico) 
+    ajax("borrar",  nombre_topico)
+    $(this).text("Seguir");
+    }
+  });
+
+
+  $( "#btn_publicador" ).on( "click", function( event ) {
+
+    const $titulo= $('#titulo');
+    const $descripcion= $('#descripcion');
+    const $tipo= $('#tipo');
+
+    const message = {
+      title: $titulo.val(),
+      description: $descripcion.val(),
+      topic : $tipo.val()
+      }
+      
+    event.preventDefault();
+    pubSub.publish($tipo.val(),message)
+    guardarNoticia(message)
+  });
+
+
+
+
+  function randomNoticiaPublicador(data){
+    var noticias = data;    
+    var index = Math.floor(Math.random() * 3);
+    pubSub.publish(noticias[index].topic, noticias[index])
+    guardarNoticia(noticias[index])
+    console.log(noticias[index].topic , noticias[index])
+    
+    }
+
+    $("#start").click(function(){
+     // console.log("entro");
+      timer = setInterval(randomNoticiaPublicador,6000,noticias); 
+    });
+
+    $("#stop").click(function(){
+      clearInterval(timer);
+    });
 })

@@ -1,0 +1,97 @@
+<%- include("../partials/header") %>
+<%- include("../partials/menu2") %>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-3 p-3">
+            <div class="row" >
+                <div class="pt-3">
+                    <h4 class=""> Grupo <button type="button" class="btn btn-sm" id="crear_grupo"><i class="bi 2x bi-plus-circle p-1"></i></button></h4>
+                </div>
+                    <div class="container" id="grupos">
+                    <h6>grupo 1</h6>
+                    </div>
+            </div>
+            <div class="row">
+                <div class="pt-3">
+                    <h4> Tipo de Noticias</h4> 
+                </div>
+                    <div class="container" id="tipo de noticias">
+                       <div class="suscripciones-section p-3">
+                           <div class="titulo-topico" >
+                                <h6>Regional</h6>
+                            </div>
+                            <div class="">
+                                <button type="button" class="btn btn-sm estado" value="regional" id="regional">Seguir</button>
+                            </div>
+                       </div>
+                       <div class="suscripciones-section p-3">
+                            <div class="titulo-topico" > 
+                                <h6>Nacional</h6>
+                            </div>
+                            <div class="">
+                                <button type="button" class="btn btn-sm estado" value="nacional" id="nacional">Seguir</button>
+                            </div>
+                    </div>
+                        <div class="suscripciones-section p-3">
+                            <div class="titulo-topico" id="Internacional">
+                                    <h6>Internacional</h6>
+                            </div>
+                            <div class="">
+                                <button type="button" class="btn btn-sm estado" value="internacional"  id="internacional">Seguir</button>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            
+                <button id="start" >Start</button>
+                <button id="stop">Stop</button> 
+        </div>
+        <div class="col-9">
+            <div class="p-3"> 
+                <h1 class="justify-content-center">Periodico Digital, Hola <%= id %></h1>
+             </div>
+            <div class="row">
+                <div class="col-9" id="post_noticias_suscrito"> 
+                 <!--aqui -->
+                    <% posts.forEach((post) =>{ %>
+                    <div class="card shadow-sm p-3 mb-5 bg-body rounded">
+                        <div class="card-body">
+                          <h5 class="card-title pb-1"><%= post.title  %></h5>
+                          <h6 class="card-subtitle mb-2 text-muted"><%= post.topic  %></h6>
+                          <p class="card-text"><%= post.description %></p>
+                        </div>
+                        <div class="card-footer ">
+                          <div>
+                              <div class="row ">
+                                <div class="col-6">
+                                    <h6><i class="bi bi-person p-1"></i>Publicador Uno</h6>
+                                </div>
+                                <div class="col-4">
+                                    <h6><i class="bi bi-clock p-1"></i><%= post.created %></h6> 
+                                </div>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                     <% })  %>
+                </div>
+
+                <div class="col-3">
+                    <div class="card shadow-sm p-3 mb-5 bg-body rounded Light">
+                        <div class="card-body">
+                          <h5 class="card-title pb-1 text-center"> Defensor de los derechos</h5>
+                          <p class="card-text text-center">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+                               sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+                        </div>
+                      
+                      </div>
+
+                </div>
+             </div>
+        </div>
+    </div>
+
+</div>
+<button id="help" >help</button>
