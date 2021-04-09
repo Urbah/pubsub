@@ -1,0 +1,39 @@
+<%- include("../partials/header") %>
+<%- include("../partials/menu2") %>
+
+<div class="container">
+    <div class="p-3 align-middle">
+        <h3>Bienvenido publicador</h3>
+    </div>
+    <div class="row">
+       <div class="col-4">
+      </div>
+          <div class="col-4">
+             <div class="container">
+                 <h5 class="p-3">Ingresa tu publicación</h5>
+                 <form>
+                 <div class="mb-3">
+                  <label for="titulo" class="form-label">Titulo de la noticia</label>
+                  <input type="text" class="form-control" id="titulo" name="titulo">
+                </div>
+                <div class="mb-3" >
+                  <label for="categorias" class="form-label">Tipo de noticia</label>
+                  <select class="form-select" name="tipo" aria-label="Default select example" id="tipo">
+                      <option>Tipo de noticia</option>
+                      <option value="regional">Regional</option>
+                      <option value="nacional">Nacional</option>
+                      <option value="internacional">Internacional</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                  <label for="Descripción" class="form-label">Descripción</label>
+                  <textarea class="form-control" id="descripcion" name="descripcion" rows="5"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn_publicador">Enviar </button>
+              </form>
+             </div>
+           </div>
+      <div class="col-4">
+       </div>
+  </div>
+</div>

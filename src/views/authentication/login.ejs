@@ -1,16 +1,24 @@
 <%- include("../partials/header") %>
+<%- include("../partials/menu2") %>
 <div class="container pt-2">
     <%- include("../partials/msgs") %>
     <form action="/login" method="POST" >
-        <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">Username</label>
-            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="username">
+        <div class="container ">
+         <div>
+             <h3>Ingresa tu Usuario</h3>
+         </div>   
+        <div class="p-3">
+            <label for="Usuario" class="form-label">Usuario</label>
+            <input type="text" class="form-control" id="Usuario" name="username">
+          </div>
+          <div class="p-3">
+            <label for="contraseña" class="form-label"> Contraseña</label>
+            <input type="password" class="form-control" id="contraseña" name="password"></input>
+          </div>
+          <div class="d-flex justify-content-center ">
+        <button type="submit" class="btn btn-primary px-5 py-2">Aceptar</button>
         </div>
-        <div class="mb-3">
-            <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" name="password">
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
     </form>
     <%- include("../partials/footer") %>
 </div>

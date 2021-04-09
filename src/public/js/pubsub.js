@@ -14,8 +14,7 @@ class PubSub {
     this.subscription = new Subscription()
 
     this.load = this.load.bind(this)
-    this.handleReceivedClientMessage = this.handleReceivedClientMessage.bind(
-      this)
+    this.handleReceivedClientMessage = this.handleReceivedClientMessage.bind(this)
     this.handleAddSubscription = this.handleAddSubscription.bind(this)
     this.handleUnsubscribe = this.handleUnsubscribe.bind(this)
     this.handlePublishMessage = this.handlePublishMessage.bind(this)
@@ -25,6 +24,7 @@ class PubSub {
   clients(){
     return this.clients
   }
+
 
   load () {
   
@@ -40,6 +40,7 @@ class PubSub {
       }
       // add new client to the map
       this.addClient(client)
+
 
       // listen when receive message from client
       ws.on('message',
@@ -68,12 +69,11 @@ class PubSub {
 
   handleAddSubscription (topic, clientId) {
     const client = this.getClient(clientId)
-    console.log('handleAddSubscriptio cliente ')
-    console.log(client)
     if (client) {
       const subscriptionId = this.subscription.add(topic, clientId)
       client.subscriptions.push(subscriptionId)
       this.addClient(client)
+      console.log("me suscribi")
     }
   }
 
@@ -81,7 +81,7 @@ class PubSub {
   handleUnsubscribe (topic, clientId) {
 
     const client = this.getClient(clientId)
-
+    
     let clientSubscriptions = _.get(client, 'subscriptions', [])
 
     const userSubscriptions = this.subscription.getSubscriptions(
@@ -95,10 +95,13 @@ class PubSub {
 
     })
 
+    console.log("subscripciones final" , clientSubscriptions )
+
     // let update client subscriptions
     if (client) {
       client.subscriptions = clientSubscriptions
       this.addClient(client)
+
     }
   }
 
@@ -107,19 +110,21 @@ class PubSub {
     isBroadcast = false that mean send all, if true, send all not me
   */
   handlePublishMessage (topic, message, from, isBroadcast = false) {
-    console.log('se lanzo el mensajee!!!')
 
     let subscriptions = isBroadcast
       ? this.subscription.getSubscriptions(
-        (sub) => sub.topic === topic && sub.clientId !== from)
+        (sub) => sub.topic === topic && sub.clientId == from)
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
 
+        console.log(subscriptions)
+              
     // now let send to all subscribers in the topic with exactly message from publisher
-    subscriptions.forEach((subscription) => {
-      const clientId = subscription.clientId
-      const subscriptionType = subscription.type  // email, phone, ....
-      console.log('CLient id of subscription', clientId, subscription)
+      subscriptions.forEach((subscription) => {
+      const clientId = subscription.clientId 
+      const subscriptionType = subscription.type 
+      console.log("subscriptionType", subscriptionType)
+      console.log('Client id of subscription', clientId, subscription)
 
       // we are only handle send via websocket
       if (subscriptionType === 'ws') {
@@ -171,9 +176,11 @@ class PubSub {
   
           case 'subscribe':{
             //handle add this subscriber
+           // console.log("suscribete shit")
             const topic = _.get(message, 'payload.topic', null)
             if (topic) {
               this.handleAddSubscription(topic, clientId)
+
             }
             break;}
   
@@ -233,6 +240,7 @@ class PubSub {
       client.id = this.autoId()
     }
     this.clients = this.clients.set(client.id, client)
+   
   }
 
   //Remove a client 
@@ -267,3 +275,7 @@ class PubSub {
   }
 }
 module.exports = PubSub
+
+
+
+// y si colocamos la funcion de addclients relacionado a las secciones?

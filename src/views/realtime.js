@@ -6,8 +6,6 @@ export default class PubSubClient {
       this.changeUser = this.changeUser.bind(this)
       this.reconnect = this.reconnect.bind(this)
       this.connect = this.connect.bind(this)
-      //this.runSubscriptionQueue = this.runSubscriptionQueue.bind(this)
-      //this.runQueue = this.runQueue.bind(this)
   
       this.unsubscribe = this.unsubscribe.bind(this)
       this.subscribe = this.subscribe.bind(this)
@@ -17,11 +15,8 @@ export default class PubSubClient {
       // status of client connection
       this._connected = false
       this._ws = null
-      //this._queue = []
       this._id = null
-  
-      // store listeners
-     // this._listeners = []
+
   
       //All subscriptions
       this._subscriptions = []
@@ -63,12 +58,6 @@ export default class PubSubClient {
     unsubscribe (topic) {
   
       const subscription = this._subscriptions.find((sub) => sub.topic === topic)
-   /*
-      if (subscription && subscription.listener) {
-        // first need to remove local listener
-        subscription.listener.remove()
-      }
-   */
       // need to tell to the server side that i dont want to receive message from this topic
       this.send({
         action: 'unsubscribe',
@@ -96,7 +85,6 @@ export default class PubSubClient {
       this._subscriptions.push({
         topic: topic,
         callback: cb ? cb : null,
-       /* listener: listener,*/
       })
     }
   
@@ -154,11 +142,6 @@ export default class PubSubClient {
         message = JSON.stringify(message)
         this._ws.send(message)
       } else {
-        // let keep it in queue
-       /* this._queue.push({
-          type: 'message',
-          payload: message,
-        })*/
       }
     }
     auth(){
@@ -177,40 +160,33 @@ export default class PubSubClient {
       }
 
     }
-  /*
-    //Run Queue after connecting successful
-    runQueue () {
-      if (this._queue.length) {
-        this._queue.forEach((q, index) => {
-          switch (q.type) {
-            case 'message':
-              this.send(q.payload)
-              break
-            default:
-              break
-          }
-          // remove queue
-          delete this._queue[index]
-        })
-      }
-    }
-  
-    //Let auto subscribe again
-  
-    runSubscriptionQueue () {
-      if (this._subscriptions.length) {
-        this._subscriptions.forEach((subscription) => {
-          this.send({
-            action: 'subscribe',
-            payload: {
-              topic: subscription.topic,
-            },
-          })
-  
-        })
-      }
-    }
-   */
+    showNoticiaPublicador(data){
+      $( "#post_noticias_suscrito" ).prepend(  
+        ` <div class="row">
+                  <div class="col-12">
+                      <div class="card shadow-sm p-3 mb-5 bg-body rounded">
+                          <div class="card-body">
+                            <h5 class="card-title pb-1">` + data.title + ` </h5>
+                            <h6 class="card-subtitle mb-2 text-muted">` + data.topic + `</h6>
+                            <p class="card-text">` + data.description + `</p>
+                          </div>
+                          <div class="card-footer ">
+                            <div>
+                                <div class="row ">
+                                  <div class="col-6">
+                                      <h6><i class="bi bi-person p-1"></i>` + data.nombre_publicador + `</h6>
+                                  </div>
+                                  <div class="col-4">
+                                      <h6><i class="bi bi-clock p-1"></i>1 min</h6> 
+                                  </div>
+                               </div>
+                            </div>
+                          </div>
+                        </div>
+                  </div>
+               </div>
+               ` );
+  }
     //Implement reconnect
     /*reconnect () {
       // if is reconnecting so do nothing
@@ -251,7 +227,6 @@ export default class PubSubClient {
       ws.onmessage = (message) => {
         let user = this.user
         const jsonMessage = this.stringToJson(message.data)
-  
         const action = jsonMessage.action
         const payload = jsonMessage.payload
   
@@ -269,6 +244,7 @@ export default class PubSubClient {
   
           case 'publish':
             console.log(`subscribe_topic_${payload.topic}`, payload.message)
+            this.showNoticiaPublicador(payload.message)
             // let emit this to subscribers
             break
    
