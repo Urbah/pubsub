@@ -1,6 +1,5 @@
 const express = require('express');
-const app = express();
-const server = require('http').createServer(app);
+let app = express();
 const path = require('path')
 const cors =  require('cors')
 const WebSocketServer = require('ws')
@@ -8,12 +7,34 @@ const session = require('express-session')
 const flash = require('connect-flash')
 const passport = require('passport')
 const {isLoggedIn} = require('./middleware/auth')
-
+const http = require('http')
 const PubSub = require('./public/js/pubsub')
 const User = require('./models/User');
-require('./database')
+const Database = require('./database')
 require('./config/passport')
 
+app.server = http.createServer(app);
+
+
+new Database().connect().then((db) => {
+
+	console.log("Successful connected to database.")
+  //console.log(db)
+	app.db = db;
+	
+}).catch((err) => {
+
+
+	throw(err);
+});
+
+
+
+app.wss = new WebSocketServer.Server({
+  server: app.server
+})
+app.wss= new PubSub(app)
+console.log('app.db'+app.db)
 app.use(cors({
     exposedHeaders: '*',
   }))
@@ -45,29 +66,24 @@ app.use((req, res, next)=>{
   res.locals.error = req.flash('error')
   res.locals.success = req.flash('success')
   res.locals.user = req.user || null
-  if(!app.pubsub.session){
+  /*if(!app.pubsub.session){
     app.pubsub.reciveClientData(res.locals.user)
-  }
+  }*/
   //crear una variable que pase a true cuando se ejecute esta funcion, para que solo se ejecute una vez
   //console.log(res.locals)
   next();
 })
 
-//routes
+//routes 
 //index
 app.get("/", function(req, res){
-  if(res.locals.user && res.locals.user.topics){
-    res.locals.user.topics.forEach((topic)=>{
-      console.log(res.locals.user._id)
-      app.pubsub.handleReceivedClientMessage(res.locals.user._id,{
-        action: 'subscribe',
-        payload: {
-          topic: topic,
-        },
-      })
-    })
-  }
+    console.log('req.user  '+req.user)
+    
     res.render("index");
+   // console.log(app.pubsub.clients._root.entries)
+    console.log('geeeeeeeeeettttttttt')
+  //  console.log(app.pubsub.clients.get('a044ba30-94cc-11eb-87a6-df938383b27c'))
+    //console.log(app.pubsub)
 })
 app.get("/hidden",isLoggedIn, function(req, res){
     res.render("index");
@@ -88,9 +104,12 @@ app.get('/logout', (req, res)=>{
   req.logout();
   res.redirect('/')
 })
-app.get('/data', function(req, res){
-  //console.log(res.locals)
-  res.json(res.locals.user)
+app.get('/dataUser', function(req, res){
+  if(res.locals.user && res.locals.user.username){
+  let {username, topics, role, _id} =  res.locals.user
+    user={_id,username,role,topics,}
+    res.json(user)
+  }
 })
 
   //register
@@ -99,7 +118,6 @@ app.get("/register", function(req, res){
 })
 app.post("/register", async(req, res)=>{
   const {username, password, role, topics} = req.body
-  //console.log(req.body)
   const error=[];
   if(!username){
     error.push({text: 'Please write a username'})
@@ -121,13 +139,8 @@ app.post("/register", async(req, res)=>{
   }
 })
 
-const wss = new WebSocketServer.Server({
-    server: server,
-  })
-const pubSubServer = new PubSub({wss: wss})
-app.pubsub = pubSubServer
 
 
-server.listen(3000, ()=>{
+app.server.listen(3000, ()=>{
     console.log("servidor activo!!")
 });

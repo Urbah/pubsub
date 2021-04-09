@@ -4,14 +4,14 @@ const uuid = require('uuid')
 const Subscription = require('./subscription')
 const Post = require('../../models/Post')
 const { Mongoose } = require('mongoose')
+
 class PubSub {
 
-  constructor (ctx) {
-    this.wss = ctx.wss
+  constructor (app) {
+    this.app = app
 
     this.clients = new immutable.Map()
     this.subscription = new Subscription()
-    this.session= null
 
     this.load = this.load.bind(this)
     this.handleReceivedClientMessage = this.handleReceivedClientMessage.bind(
@@ -20,40 +20,30 @@ class PubSub {
     this.handleUnsubscribe = this.handleUnsubscribe.bind(this)
     this.handlePublishMessage = this.handlePublishMessage.bind(this)
     this.removeClient = this.removeClient.bind(this)
-    this.reciveClientData = this.reciveClientData.bind(this)
     this.load()
+  }
+  clients(){
+    return this.clients
   }
 
   load () {
-    const wss = this.wss
-    wss.on('connection', (ws) => {
+  
+    this.app.wss.on('connection', (ws) => {
       let id = this.autoId()
       let client = {
         id: id,
         ws: ws,
         userId: null,
+        authenticated: false,
         role:'reader',
         subscriptions: [],
       }
-      console.log('-----------client-')
-      console.log(client)
-      if(this.session){
-        id=this.session._id
-        client['id']=this.session._id
-        client['userId']= this.session._id
-        client['role']=this.session.role
-        client['subscriptions']=this.session.topics.concat(),
-        
-        console.log('client-------------')
-        console.log(client)  
-      }
- 
       // add new client to the map
       this.addClient(client)
 
       // listen when receive message from client
       ws.on('message',
-        (message) => this.handleReceivedClientMessage(id, message))
+        (message) => this.handleReceivedClientMessage(client.id, message))
 
       ws.on('close', () => {
         console.log('Client is disconnected')
@@ -74,12 +64,7 @@ class PubSub {
    Handle add subscription  
    clientId = subscriber
   */
-   reciveClientData(sesionData){
-      this.session = sesionData
-      //console.log('this.session')
-      //console.log(this.session)
-      return true;
-   }
+ 
 
   handleAddSubscription (topic, clientId) {
     const client = this.getClient(clientId)
@@ -90,7 +75,6 @@ class PubSub {
       client.subscriptions.push(subscriptionId)
       this.addClient(client)
     }
-
   }
 
   //Handle unsubscribe topic
@@ -102,7 +86,6 @@ class PubSub {
 
     const userSubscriptions = this.subscription.getSubscriptions(
       (s) => s.clientId === clientId && s.type === 'ws')
-
     userSubscriptions.forEach((sub) => {
 
       clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id)
@@ -117,7 +100,6 @@ class PubSub {
       client.subscriptions = clientSubscriptions
       this.addClient(client)
     }
-
   }
 
   /*
@@ -125,6 +107,8 @@ class PubSub {
     isBroadcast = false that mean send all, if true, send all not me
   */
   handlePublishMessage (topic, message, from, isBroadcast = false) {
+    console.log('se lanzo el mensajee!!!')
+
     let subscriptions = isBroadcast
       ? this.subscription.getSubscriptions(
         (sub) => sub.topic === topic && sub.clientId !== from)
@@ -139,6 +123,7 @@ class PubSub {
 
       // we are only handle send via websocket
       if (subscriptionType === 'ws') {
+        console.log('se lanzo el mensajee!!!')
         this.send(clientId, {
           action: 'publish',
           payload: {
@@ -150,21 +135,38 @@ class PubSub {
     })
   }
   //Handle receive client message
-  async handleReceivedClientMessage (clientId, message) {
+  handleReceivedClientMessage (clientId, message) { 
+ 
     try{
-      console.log('--------------clientId-----------')
-      clientId.toString()
-      console.log(clientId)
+   
       const client = this.getClient(clientId)
       if (typeof message === 'string') {
         message = this.stringToJson(message)
         const action = _.get(message, 'action', '')
         switch (action) {
-  
-          case 'me':{
-            //Client is asking for his inf
+          case 'noAuth':{
+            //Client no Auth is asking for his inf
+
             this.send(clientId,
-            {action: 'me', payload: {id: clientId, userId: client.userId}})
+            {action: 'noAuth', payload: {id: clientId, userId: client.userId}})
+            break;}
+  
+          case 'auth':{
+            //Client Auth is asking for his inf
+            const userId = _.get(message, 'payload.userId', null)
+            client.userId = userId
+            console.log('client.userid',client.userId)
+
+            if(this.app.db){
+              console.log('app.db--------------------------------------------------------------------------')
+              this.app.db.model('User').findById(client.userId,(err, userfind)=>{
+                if(userfind){
+                  client.authenticated = true
+                }
+              })
+            }
+            this.send(clientId,
+            {action: 'auth', payload: {id: clientId, userId: client.userId}})
             break;}
   
           case 'subscribe':{
@@ -172,11 +174,6 @@ class PubSub {
             const topic = _.get(message, 'payload.topic', null)
             if (topic) {
               this.handleAddSubscription(topic, clientId)
-              //const newSubscription = new Subs({topic})
-  
-  
-              //prueba v
-              //newSubscription.save();
             }
             break;}
   
@@ -188,54 +185,37 @@ class PubSub {
             break;}
   
           case 'publish':{
-            const publishTopic = _.get(message, 'payload.topic', null)
-            const publishMessage = _.get(message, 'payload.message')
-            if (publishTopic) {
-              const from = clientId
-              this.handlePublishMessage(publishTopic, publishMessage, from)
-              const newPost = new Post({
-                title: 'test',
-                topic: publishTopic,
-                description: 'TEST TEXT',
-                author: {
-                  username: this.session.username,
-                  id: this.session._id,
-                }
-              })
-              await newPost.save()
+            if(client.authenticated){
+              const publishTopic = _.get(message, 'payload.topic', null)
+              const publishMessage = _.get(message, 'payload.message')
+              if (publishTopic) {
+                const from = clientId
+                this.handlePublishMessage(publishTopic, publishMessage, from)
+              }
             }
             break;}
   
           case 'broadcast':{
+            if(client.authenticated){
             const broadcastTopicName = _.get(message, 'payload.topic', null)
             const broadcastMessage = _.get(message, 'payload.message')
             if (broadcastTopicName) {
               this.handlePublishMessage(broadcastTopicName, broadcastMessage,
                 clientId, true)
-                const newPost = new Post({
-                  title: 'test',
-                  topic: publishTopic,
-                  description: 'TEST TEXT',
-                  author: {
-                    username: this.session.username,
-                    id: this.session._id,
-                  }
-                })
-                await newPost.save()
             }
+          }
             break;}
-  
+           
           default:{
             break;}
         }
-  
+
       } else {
         // maybe data message we handle later.
       }
     }catch(error){
       console.log(error)
     }
-
   }
   //Convert string of message to JSON
   stringToJson (message) {
@@ -249,8 +229,6 @@ class PubSub {
 
   //Add new client connection to the map
   addClient (client) {
-    //console.log('---------------client--------------------')
-    //console.log(client)
     if (!client.id) {
       client.id = this.autoId()
     }

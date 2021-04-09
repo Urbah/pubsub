@@ -1,9 +1,20 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/newpaper-db-app', {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true
-}).then(db => console.log('db conected')).
-catch(err => console.log(err));
+const URL = 'mongodb://localhost/newpaper-db-app'
+
+class Database{
+        connect(){
+            return new Promise((resolve, reject) => {
+                mongoose.connect(URL, {
+                    useCreateIndex: true,
+                    useNewUrlParser: true,
+                    useFindAndModify: false,
+                    useUnifiedTopology: true
+                }, (err, db)=>{
+                    return err ? reject(err) : resolve(db);
+                })
+            })
+        }
+}
+
+module.exports = Database
