@@ -1,5 +1,5 @@
-const _ = require('lodash') 
-const immutable = require ('immutable')
+const _ = require('lodash')
+const immutable = require('immutable')
 const uuid = require('uuid')
 const Subscription = require('./subscription')
 const Post = require('../../models/Post')
@@ -7,7 +7,7 @@ const { Mongoose } = require('mongoose')
 
 class PubSub {
 
-  constructor (app) {
+  constructor(app) {
     this.app = app
 
     this.clients = new immutable.Map()
@@ -21,13 +21,12 @@ class PubSub {
     this.removeClient = this.removeClient.bind(this)
     this.load()
   }
-  clients(){
+  clients() {
     return this.clients
   }
 
+  load() {
 
-  load () {
-  
     this.app.wss.on('connection', (ws) => {
       let id = this.autoId()
       let client = {
@@ -35,7 +34,7 @@ class PubSub {
         ws: ws,
         userId: null,
         authenticated: false,
-        role:'reader',
+        role: 'reader',
         subscriptions: [],
       }
       // add new client to the map
@@ -48,26 +47,19 @@ class PubSub {
 
       ws.on('close', () => {
         console.log('Client is disconnected')
-    // Find user subscriptions and remove
-       /* const userSubscriptions = this.subscription.getSubscriptions(
+        // Find user subscriptions and remove
+        const userSubscriptions = this.subscription.getSubscriptions(
           (sub) => sub.clientId === id)
         userSubscriptions.forEach((sub) => {
           this.subscription.remove(sub.id)
-        })*/
-
+        })
         // now let remove client
         this.removeClient(id)
       })
     })
-  } 
+  }
 
-  /*
-   Handle add subscription  
-   clientId = subscriber
-  */
- 
-
-  handleAddSubscription (topic, clientId) {
+  handleAddSubscription(topic, clientId) {
     const client = this.getClient(clientId)
     if (client) {
       const subscriptionId = this.subscription.add(topic, clientId)
@@ -78,10 +70,9 @@ class PubSub {
   }
 
   //Handle unsubscribe topic
-  handleUnsubscribe (topic, clientId) {
+  handleUnsubscribe(topic, clientId) {
 
     const client = this.getClient(clientId)
-    
     let clientSubscriptions = _.get(client, 'subscriptions', [])
 
     const userSubscriptions = this.subscription.getSubscriptions(
@@ -92,16 +83,12 @@ class PubSub {
 
       // now let remove subscriptions
       this.subscription.remove(sub.id)
-
     })
-
-    console.log("subscripciones final" , clientSubscriptions )
 
     // let update client subscriptions
     if (client) {
       client.subscriptions = clientSubscriptions
       this.addClient(client)
-
     }
   }
 
@@ -109,26 +96,24 @@ class PubSub {
     Handle publish a message to a topic
     isBroadcast = false that mean send all, if true, send all not me
   */
-  handlePublishMessage (topic, message, from, isBroadcast = false) {
+  handlePublishMessage(topic, message, from, isBroadcast = false) {
 
     let subscriptions = isBroadcast
       ? this.subscription.getSubscriptions(
         (sub) => sub.topic === topic && sub.clientId == from)
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
+    console.log(subscriptions)
 
-        console.log(subscriptions)
-              
     // now let send to all subscribers in the topic with exactly message from publisher
-      subscriptions.forEach((subscription) => {
-      const clientId = subscription.clientId 
-      const subscriptionType = subscription.type 
+    subscriptions.forEach((subscription) => {
+      const clientId = subscription.clientId
+      const subscriptionType = subscription.type
       console.log("subscriptionType", subscriptionType)
       console.log('Client id of subscription', clientId, subscription)
 
       // we are only handle send via websocket
       if (subscriptionType === 'ws') {
-        console.log('se lanzo el mensajee!!!')
         this.send(clientId, {
           action: 'publish',
           payload: {
@@ -140,59 +125,61 @@ class PubSub {
     })
   }
   //Handle receive client message
-  handleReceivedClientMessage (clientId, message) { 
- 
-    try{
-   
+  handleReceivedClientMessage(clientId, message) {
+
+    try {
       const client = this.getClient(clientId)
       if (typeof message === 'string') {
         message = this.stringToJson(message)
         const action = _.get(message, 'action', '')
         switch (action) {
-          case 'noAuth':{
+          case 'noAuth': {
             //Client no Auth is asking for his inf
 
             this.send(clientId,
-            {action: 'noAuth', payload: {id: clientId, userId: client.userId}})
-            break;}
-  
-          case 'auth':{
+              { action: 'noAuth', payload: { id: clientId, userId: client.userId } })
+            break;
+          }
+
+          case 'auth': {
             //Client Auth is asking for his inf
             const userId = _.get(message, 'payload.userId', null)
             client.userId = userId
-            console.log('client.userid',client.userId)
+            console.log('client.userid', client.userId)
 
-            if(this.app.db){
-              console.log('app.db--------------------------------------------------------------------------')
-              this.app.db.model('User').findById(client.userId,(err, userfind)=>{
-                if(userfind){
+            if (this.app.db) {
+              this.app.db.model('User').findById(client.userId, (err, userfind) => {
+                if (userfind) {
                   client.authenticated = true
                 }
               })
             }
             this.send(clientId,
-            {action: 'auth', payload: {id: clientId, userId: client.userId}})
-            break;}
-  
-          case 'subscribe':{
+              { action: 'auth', payload: { id: clientId, userId: client.userId } })
+            break;
+          }
+
+          case 'subscribe': {
             //handle add this subscriber
-           // console.log("suscribete shit")
+            // console.log("suscribete shit")
             const topic = _.get(message, 'payload.topic', null)
             if (topic) {
               this.handleAddSubscription(topic, clientId)
 
             }
-            break;}
-  
-          case 'unsubscribe':{
+            break;
+          }
+
+          case 'unsubscribe': {
             const unsubscribeTopic = _.get(message, 'payload.topic')
             if (unsubscribeTopic) {
               this.handleUnsubscribe(unsubscribeTopic, clientId)
             }
-            break;}
-  
-          case 'publish':{
-            if(client.authenticated){
+            break;
+          }
+
+          case 'publish': {
+            if (client.authenticated) {
               const publishTopic = _.get(message, 'payload.topic', null)
               const publishMessage = _.get(message, 'payload.message')
               if (publishTopic) {
@@ -200,32 +187,33 @@ class PubSub {
                 this.handlePublishMessage(publishTopic, publishMessage, from)
               }
             }
-            break;}
-  
-          case 'broadcast':{
-            if(client.authenticated){
-            const broadcastTopicName = _.get(message, 'payload.topic', null)
-            const broadcastMessage = _.get(message, 'payload.message')
-            if (broadcastTopicName) {
-              this.handlePublishMessage(broadcastTopicName, broadcastMessage,
-                clientId, true)
-            }
+            break;
           }
-            break;}
-           
-          default:{
-            break;}
+
+          case 'broadcast': {
+            if (client.authenticated) {
+              const broadcastTopicName = _.get(message, 'payload.topic', null)
+              const broadcastMessage = _.get(message, 'payload.message')
+              if (broadcastTopicName) {
+                this.handlePublishMessage(broadcastTopicName, broadcastMessage,
+                  clientId, true)
+              }
+            }
+            break;
+          }
+
+          default: {
+            break;
+          }
         }
 
-      } else {
-        // maybe data message we handle later.
       }
-    }catch(error){
+    } catch (error) {
       console.log(error)
     }
   }
   //Convert string of message to JSON
-  stringToJson (message) {
+  stringToJson(message) {
     try {
       message = JSON.parse(message)
     } catch (e) {
@@ -233,33 +221,31 @@ class PubSub {
     }
     return message
   }
-
   //Add new client connection to the map
-  addClient (client) {
+  addClient(client) {
     if (!client.id) {
       client.id = this.autoId()
     }
     this.clients = this.clients.set(client.id, client)
-   
   }
 
   //Remove a client 
-  removeClient (id) {
+  removeClient(id) {
     this.clients = this.clients.remove(id)
   }
 
   //Get a client connection
-  getClient (id) {
+  getClient(id) {
     return this.clients.get(id)
   }
 
   //Generate an ID
-  autoId () {
+  autoId() {
     return uuid.v1()
   }
 
   //Send to client message
-  send (clientId, message) {
+  send(clientId, message) {
     const client = this.getClient(clientId)
     if (!client) {
       return
