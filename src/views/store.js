@@ -1,6 +1,6 @@
 import PubSubClient from './realtime.js'
 
-export default class data {
+export default class store {
     constructor() {
         this.user = false
         this.pubSub = new PubSubClient('ws://localhost:3000', {

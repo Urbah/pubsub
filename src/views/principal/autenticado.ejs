@@ -88,6 +88,13 @@
                       
                       </div>
 
+                      <div>
+                          <h2>Groups</h2>
+                          <% groups.forEach((group)=>{ %>
+                                <p><%= group.name %>, <%= group.author.username %></p>
+                                <a href='./group/<%=group._id %>'>unirse</a>>
+                           <% }) %>
+                      </div>
                 </div>
              </div>
         </div>

@@ -30,6 +30,7 @@ class PubSub {
     this.app.wss.on('connection', (ws) => {
       let id = this.autoId()
       let client = {
+        
         id: id,
         ws: ws,
         userId: null,
@@ -39,7 +40,6 @@ class PubSub {
       }
       // add new client to the map
       this.addClient(client)
-
 
       // listen when receive message from client
       ws.on('message',

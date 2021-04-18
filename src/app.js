@@ -12,7 +12,11 @@ const PubSub = require('./public/js/pubsub')
 const User = require('./models/User');
 const Database = require('./database')
 const Post = require('./models/Post');
+const Group = require('./models/Group');
 require('./config/passport')
+//routes
+const groupsRoutes = require('./routes/groups')
+
 
 app.server = http.createServer(app);
 new Database().connect().then((db) => {
@@ -55,10 +59,10 @@ app.use((req, res, next) => {
   next();
 })
 
+app.use('/group',groupsRoutes);
 //routes 
 //index
 app.get("/", function (req, res) {
-  // console.log('req.user  '+req.user)  
   res.render("principal/no_autenticado");
 })
 
@@ -78,7 +82,6 @@ app.get("/publicador", function (req, res) {
 app.get("/p", isLoggedIn, function (req, res) {
   let user = res.locals.user
   var objeto = []
-  let post_finales
   let topicos = user.topics
   topicos = user.topics
   if (res.locals.user && res.locals.user.role === "publish") {
@@ -95,9 +98,10 @@ app.get("/p", isLoggedIn, function (req, res) {
       }
       else {
         if (res.locals.user && res.locals.user.role === "reader") {
-          res.render("principal/autenticado", { id: user.username, posts: posts })
+          Group.find({},(err, groups)=>{
+            res.render("principal/autenticado", { id: user.username, posts: posts, groups: groups })
+          })
         }
-        post_finales = posts
       }
     })
   }
@@ -158,25 +162,6 @@ app.post("/register", async (req, res) => {
   }
 })
 
-//publicador
-/*app.post("/publicador", function(req, res){
-
- // console.log("hello")
-
- // console.log(req.user._id)
- // console.log(req.body) 
-  message = JSON.stringify(req.body)
-
-  app.pubsub.handleReceivedClientMessage(req.user._id,{
-    action: 'publish',
-    payload: {   
-    topic: req.body.topic,
-    message: message,
-  },
-})
-res.redirect("/publicador")
-})*/
-
 app.put("/modificar/:id", function (req, res) {
   var ajaxData = req.body
   console.log(req.body)
@@ -198,10 +183,6 @@ app.post("/noticia", function (req, res) {
   const post = new Post(req.body);
   console.log("app.js", req.body)
   post.save()
-})
-
-//obtener noticias segun el topico
-app.get("/getpost", function (req, res) {
 })
 
 app.server.listen(3000, () => {
