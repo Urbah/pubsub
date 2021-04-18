@@ -37,11 +37,10 @@ class PubSub {
         role: 'reader',
         subscriptions: [],
       }
-      // add new client to the map
+    
       this.addClient(client)
 
 
-      // listen when receive message from client
       ws.on('message',
         (message) => this.handleReceivedClientMessage(client.id, message))
 
@@ -57,6 +56,8 @@ class PubSub {
         this.removeClient(id)
       })
     })
+
+
   }
 
   handleAddSubscription(topic, clientId) {
@@ -69,50 +70,53 @@ class PubSub {
     }
   }
 
-  //Handle unsubscribe topic
+
   handleUnsubscribe(topic, clientId) {
 
     const client = this.getClient(clientId)
     let clientSubscriptions = _.get(client, 'subscriptions', [])
 
-    const userSubscriptions = this.subscription.getSubscriptions(
-      (s) => s.clientId === clientId && s.type === 'ws')
-    userSubscriptions.forEach((sub) => {
+    const suscripcion = this.subscription.getSubscriptions(
+      (s) => s.clientId === clientId && s.type === 'ws' && s.topic===topic)
+    console.log("esto es userSubscriptions" , suscripcion)
 
+    suscripcion.forEach((sub) => {
+      console.log("esto es sub", sub)
       clientSubscriptions = clientSubscriptions.filter((id) => id !== sub.id)
-
-      // now let remove subscriptions
+      console.log("esto es clientSubscriptions", clientSubscriptions)
+     
       this.subscription.remove(sub.id)
     })
 
-    // let update client subscriptions
+   
     if (client) {
       client.subscriptions = clientSubscriptions
       this.addClient(client)
     }
   }
 
-  /*
-    Handle publish a message to a topic
-    isBroadcast = false that mean send all, if true, send all not me
-  */
+ 
+
   handlePublishMessage(topic, message, from, isBroadcast = false) {
 
     let subscriptions = isBroadcast
+       
       ? this.subscription.getSubscriptions(
         (sub) => sub.topic === topic && sub.clientId == from)
+       
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
-    console.log(subscriptions)
+    console.log("publish PublishMessage", subscription)
 
-    // now let send to all subscribers in the topic with exactly message from publisher
     subscriptions.forEach((subscription) => {
+      console.log("publish PublishMessage for each", subscription)
+
       const clientId = subscription.clientId
       const subscriptionType = subscription.type
-      console.log("subscriptionType", subscriptionType)
-      console.log('Client id of subscription', clientId, subscription)
+     // console.log("subscriptionType", subscriptionType)
+     // console.log('Client id of subscription', clientId, subscription)
 
-      // we are only handle send via websocket
+      
       if (subscriptionType === 'ws') {
         this.send(clientId, {
           action: 'publish',
@@ -124,7 +128,8 @@ class PubSub {
       }
     })
   }
-  //Handle receive client message
+
+
   handleReceivedClientMessage(clientId, message) {
 
     try {
@@ -134,8 +139,6 @@ class PubSub {
         const action = _.get(message, 'action', '')
         switch (action) {
           case 'noAuth': {
-            //Client no Auth is asking for his inf
-
             this.send(clientId,
               { action: 'noAuth', payload: { id: clientId, userId: client.userId } })
             break;
@@ -160,8 +163,6 @@ class PubSub {
           }
 
           case 'subscribe': {
-            //handle add this subscriber
-            // console.log("suscribete shit")
             const topic = _.get(message, 'payload.topic', null)
             if (topic) {
               this.handleAddSubscription(topic, clientId)
@@ -190,6 +191,7 @@ class PubSub {
             break;
           }
 
+          /*
           case 'broadcast': {
             if (client.authenticated) {
               const broadcastTopicName = _.get(message, 'payload.topic', null)
@@ -201,7 +203,7 @@ class PubSub {
             }
             break;
           }
-
+          */
           default: {
             break;
           }
@@ -212,7 +214,9 @@ class PubSub {
       console.log(error)
     }
   }
-  //Convert string of message to JSON
+
+ 
+  
   stringToJson(message) {
     try {
       message = JSON.parse(message)
@@ -221,7 +225,8 @@ class PubSub {
     }
     return message
   }
-  //Add new client connection to the map
+
+  
   addClient(client) {
     if (!client.id) {
       client.id = this.autoId()
@@ -229,27 +234,27 @@ class PubSub {
     this.clients = this.clients.set(client.id, client)
   }
 
-  //Remove a client 
+
   removeClient(id) {
     this.clients = this.clients.remove(id)
   }
 
-  //Get a client connection
+ 
   getClient(id) {
     return this.clients.get(id)
   }
 
-  //Generate an ID
   autoId() {
     return uuid.v1()
   }
 
-  //Send to client message
+
   send(clientId, message) {
     const client = this.getClient(clientId)
     if (!client) {
       return
     }
+    
     const ws = client.ws
     try {
       message = JSON.stringify(message)

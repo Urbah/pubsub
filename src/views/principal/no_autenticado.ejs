@@ -8,24 +8,16 @@
   <div class="container" id="post_noticias_suscrito">
       <div class="row">
           <div class="col-12">
+            <% posts.forEach((post) =>{ %>
               <div class="card shadow-sm p-3 mb-5 bg-body rounded">
                   <div class="card-body">
-                    <h5 class="card-title pb-1">Titulo noticia</h5>
-                    <h6 class="card-subtitle mb-2 text-muted">Categoria</h6>
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <h5 class="card-title pb-1"><%= post.title  %></h5>
+                    <h6 class="card-subtitle mb-2 text-muted"><%= post.topic  %></h6>
+                    <p class="card-text"><%= post.description %></p>
                   </div>
-                  <div class="card-footer ">
-                    <div>
-                        <div class="row ">
-                          <div class="col-6">
-                              <h6><i class="bi bi-person p-1"></i>Publicador Uno</h6>
-                          </div>
-                          <div class="col-4">
-                              <h6><i class="bi bi-clock p-1"></i>1 min</h6> 
-                          </div>
-                       </div>
-                    </div>
-                  </div>
+                </div>
+               <% })  %>
+                  
                 </div>
           </div>
        </div>

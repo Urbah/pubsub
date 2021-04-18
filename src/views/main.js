@@ -1,4 +1,4 @@
-import Data from './data.js'
+import Store from './store.js'
 
 let user = null
 var timer;
@@ -23,18 +23,11 @@ var noticias = [
   },
 ]
 
+
 $(function () {
-  const data = new Data()
-  var usuario = null;
-  var post = {
-    "title": "esto es una prueba",
-    "topic": "regional",
-    "description": "te amo curruncho",
-    "author": {
-      
-      "username": "luisana"
-    }
-  }
+  const store = new Store()
+
+ 
   
   $.ajax({
     url: '/dataUser',
@@ -42,7 +35,7 @@ $(function () {
       console.log('nueva data')
       console.log(datas)
       user = datas
-      data.changeUser(user)
+      store.changeUser(user)
     }
   })
   
@@ -54,6 +47,7 @@ $(function () {
       }
     }
   })
+
   
   function guardarNoticia(data) {
     $.ajax({
@@ -66,7 +60,7 @@ $(function () {
   
   function ajax(parametro, topico) {
     $.ajax({
-      url: `/modificar/${usuario._id} `,
+      url: `/modificar/${user._id} `,
       type: "PUT",
       data: { topic: topico, action: parametro },
       success: console.log("ok")
@@ -76,12 +70,13 @@ $(function () {
   function sbc(topics) {
     topics.forEach(e => {
       console.log(e)
-      data.pubSub.subscribe(e, (message) => {
+      store.pubSub.subscribe(e, (message) => {
         console.log(`Got message from topic ${e}`, message)
       })
     })
     cambiarEstadoInicial(topics)
   };
+
   //Cambiar estado de las suscripciones cuando empieza la pagina
   function cambiarEstadoInicial(usuario) {
     if (usuario) {
@@ -103,7 +98,7 @@ $(function () {
     const nombre_topico = $(this).val()
 
     if (estado == "Seguir") {
-      pubSub.subscribe(nombre_topico, (msg) => {
+      store.pubSub.subscribe(nombre_topico, (msg) => {
         console.log('se ha subscrito a ' + msg)
       })
       ajax("agregar", nombre_topico)
@@ -111,7 +106,7 @@ $(function () {
     }
     else {
       console.log("estoy en el else")
-      pubSub.unsubscribe(nombre_topico)
+      store.pubSub.unsubscribe(nombre_topico)
       ajax("borrar", nombre_topico)
       $(this).text("Seguir");
     }
@@ -130,14 +125,14 @@ $(function () {
     }
 
     event.preventDefault();
-    pubSub.publish($tipo.val(), message)
+    store.pubSub.publish($tipo.val(), message)
     guardarNoticia(message)
   });
 
   function randomNoticiaPublicador(data) {
     var noticias = data;
     var index = Math.floor(Math.random() * 3);
-    pubSub.publish(noticias[index].topic, noticias[index])
+    store.pubSub.publish(noticias[index].topic, noticias[index])
     guardarNoticia(noticias[index])
     console.log(noticias[index].topic, noticias[index])
   }
@@ -151,5 +146,5 @@ $(function () {
   });
   
   //use pubsub in terminal
-  window.ps = data.pubSub
+  window.ps = store.pubSub
 })
