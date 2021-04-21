@@ -23,19 +23,10 @@ var noticias = [
   },
 ]
 
+
 $(function () {
   const store = new Store()
-  var usuario = null;
-  var post = {
-    "title": "esto es una prueba",
-    "topic": "regional",
-    "description": "te amo curruncho",
-    "author": {
-      
-      "username": "luisana"
-    }
-  }
-  
+
   $.ajax({
     url: '/dataUser',
     success: (datas) => {
@@ -54,6 +45,7 @@ $(function () {
       }
     }
   })
+
   
   function guardarNoticia(data) {
     $.ajax({
@@ -66,7 +58,7 @@ $(function () {
   
   function ajax(parametro, topico) {
     $.ajax({
-      url: `/modificar/${usuario._id} `,
+      url: `/modificar/${user._id} `,
       type: "PUT",
       data: { topic: topico, action: parametro },
       success: console.log("ok")
@@ -82,6 +74,7 @@ $(function () {
     })
     cambiarEstadoInicial(topics)
   };
+
   //Cambiar estado de las suscripciones cuando empieza la pagina
   function cambiarEstadoInicial(usuario) {
     if (usuario) {

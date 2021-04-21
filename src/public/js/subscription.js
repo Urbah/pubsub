@@ -19,10 +19,12 @@ module.exports = class Subscription {
     const findSubscriptionWithClientId = this.subscriptions.find(
       (sub) => sub.clientId === clientId && sub.type === type && sub.topic === topic)
 
+      /*
     if (findSubscriptionWithClientId) {
       // exist and no need add more subscription
       return findSubscriptionWithClientId.id
-    }
+    }*/
+
     const id = this.autoId()
     const subscription = {
       id: id,
@@ -31,7 +33,7 @@ module.exports = class Subscription {
       type: type, // email, phone
     }
 
-    console.log('New subscriber via add method:', subscription)
+    console.log("nuevo suscriptor", subscription)
     this.subscriptions = this.subscriptions.set(id, subscription)
     return id
   }
@@ -41,11 +43,7 @@ module.exports = class Subscription {
     this.subscriptions = this.subscriptions.remove(id)
   }
 
-  //Clear all subscription
-  clear () {
 
-    this.subscriptions = this.subscriptions.clear()
-  }
 
   //Get Subscriptions
   getSubscriptions (predicate = null) {

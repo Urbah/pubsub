@@ -7,10 +7,10 @@
         <div class="col-3 p-3">
             <div class="row" >
                 <div class="pt-3">
-                    <h4 class=""> Grupo <button type="button" class="btn btn-sm" id="crear_grupo"><i class="bi 2x bi-plus-circle p-1"></i></button></h4>
+                    <h4 class=""> Grupo <a type="button" class="btn btn-sm" id="crear_grupo"  href="/creargrupo" ><i class="bi 2x bi-plus-circle p-1"></i></a></h4>
                 </div>
                     <div class="container" id="grupos">
-                    <h6>grupo 1</h6>
+                        <h5 class=""> <a type="button" class="btn btn-link" href="/grupo" style="text-decoration: none;color: #007bff;" >Grupo uno </a></h5>
                     </div>
             </div>
             <div class="row">
@@ -61,18 +61,6 @@
                           <h5 class="card-title pb-1"><%= post.title  %></h5>
                           <h6 class="card-subtitle mb-2 text-muted"><%= post.topic  %></h6>
                           <p class="card-text"><%= post.description %></p>
-                        </div>
-                        <div class="card-footer ">
-                          <div>
-                              <div class="row ">
-                                <div class="col-6">
-                                    <h6><i class="bi bi-person p-1"></i>Publicador Uno</h6>
-                                </div>
-                                <div class="col-4">
-                                    <h6><i class="bi bi-clock p-1"></i><%= post.created %></h6> 
-                                </div>
-                             </div>
-                          </div>
                         </div>
                       </div>
                      <% })  %>

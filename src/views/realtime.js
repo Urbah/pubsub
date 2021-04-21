@@ -3,14 +3,7 @@ export default class PubSubClient {
 
     // Binding
     this.user = user
-    this.changeUser = this.changeUser.bind(this)
-    this.reconnect = this.reconnect.bind(this)
-    this.connect = this.connect.bind(this)
-
-    this.unsubscribe = this.unsubscribe.bind(this)
-    this.subscribe = this.subscribe.bind(this)
-    this.publish = this.publish.bind(this)
-    this.changeId = this.changeId.bind(this)
+    this._queue = []
 
     // status of client connection
     this._connected = false
@@ -32,30 +25,45 @@ export default class PubSubClient {
       //this.connect() 
     }
   }
+
+  
   changeUser(data) {
     console.log('se ha ejecutadoo el cambio de user')
     console.log(data)
     return this.user = data
   }
   reconnect() {
-
     const user = this.user;
-
     window.setInterval(() => {
+      if(!this._isReconnecting){
 
-      if (!user && !this._connected) {
-
-        console.log("try reconnecting...");
-
-        this.connect();
+        if (!user && !this._connected) {
+          this._isReconnecting = true
+          console.log("try reconnecting...");
+          this.connect();
+        }
       }
+    }, 1000)
 
-    }, 3000)
+
+      //Implement reconnect
+  /*reconnect () {
+    // if is reconnecting so do nothing
+    if (this._isReconnecting || this._connected) {
+      return
+    }
+    // Set timeout
+    this._isReconnecting = true
+    this._reconnectTimeout = setTimeout(() => {
+      console.log('Reconnecting....')
+      this.connect()
+    }, 2000)
+  }*/
+  //Begin connect to the server
   }
 
   //Un Subscribe a topic, no longer receive new message of the topic
   unsubscribe(topic) {
-
     const subscription = this._subscriptions.find((sub) => sub.topic === topic)
     // need to tell to the server side that i dont want to receive message from this topic
     this.send({
@@ -66,24 +74,31 @@ export default class PubSubClient {
     })
   }
 
-  //Subscribe client to a topic
+  //Subscribir  a un cliente al topico
   subscribe(topic, cb) {
-    // send server with message
-    this.send({
-      action: 'subscribe',
-      payload: {
-        topic: topic,
-      },
+    //revisar mis subscripciones para no mandar nuevamente una subscripcion
+    const validarSubscripcion = this._subscriptions.find((sub)=>{
+      sub === topic
     })
+    if(!validarSubscripcion){
 
-    // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
-    this._subscriptions.push({
-      topic: topic,
-      callback: cb ? cb : null,
-    })
+      this.send({
+        action: 'subscribe',
+        payload: {
+          topic: topic,
+        },
+      })
+      
+      
+      // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
+      this._subscriptions.push({
+        topic: topic,
+        callback: cb ? cb : null,
+      }) 
+    }
   }
 
-  //Publish a message to topic, send to everyone and me
+  
   publish(topic, message) {
     this.send({
       action: 'publish',
@@ -104,6 +119,7 @@ export default class PubSubClient {
     })
     this._id = id
   }
+
   //Publish a message to the topic and send to everyone, not me
   broadcast(topic, message) {
     this.send({
@@ -155,8 +171,22 @@ export default class PubSubClient {
       console.log('se ha enviado no auth')
       this.send({ action: 'noAuth' })
     }
-
   }
+
+  runSubscriptionQueue () {
+
+    if (this._subscriptions.length) {
+      this._subscriptions.forEach((subscription) => {
+        this.send({
+          action: 'subscribe',
+          payload: {
+            topic: subscription.topic,
+          },
+        })
+      })
+    }
+  }
+
   showNoticiaPublicador(data) {
     $("#post_noticias_suscrito").prepend(
       ` <div class="row">
@@ -167,55 +197,36 @@ export default class PubSubClient {
                             <h6 class="card-subtitle mb-2 text-muted">` + data.topic + `</h6>
                             <p class="card-text">` + data.description + `</p>
                           </div>
-                          <div class="card-footer ">
-                            <div>
-                                <div class="row ">
-                                  <div class="col-6">
-                                      <h6><i class="bi bi-person p-1"></i>` + data.nombre_publicador + `</h6>
-                                  </div>
-                                  <div class="col-4">
-                                      <h6><i class="bi bi-clock p-1"></i>1 min</h6> 
-                                  </div>
-                               </div>
-                            </div>
-                          </div>
+                          
                         </div>
                   </div>
                </div>
                ` );
   }
-  //Implement reconnect
-  /*reconnect () {
-    // if is reconnecting so do nothing
-    if (this._isReconnecting || this._connected) {
-      return
-    }
-    // Set timeout
-    this._isReconnecting = true
-    this._reconnectTimeout = setTimeout(() => {
-      console.log('Reconnecting....')
-      this.connect()
-    }, 2000)
-  }*/
-  //Begin connect to the server
+
+
+
   connect() {
     const ws = new WebSocket(this._url)
     this._ws = ws
 
-    // clear timeout of reconnect
+    
     if (this._reconnectTimeout) {
       clearTimeout(this._reconnectTimeout)
     }
-
+    
     ws.onopen = () => {
       // change status of connected
       this._connected = true
       this._isReconnecting = false
 
+      this.runSubscriptionQueue()
+
       this.auth()
       console.log('Connected to the server')
     }
-    // listen a message from the server
+
+    // Escuchando mensaje del servidor
     ws.onmessage = (message) => {
       let user = this.user
       const jsonMessage = this.stringToJson(message.data)
@@ -225,6 +236,8 @@ export default class PubSubClient {
       switch (action) {
         case 'noAuth':
           this._id = payload.id
+          this.subscribe("generales")
+          
           console.log('payload.id ' + payload.id + " ")
           break
 
@@ -235,9 +248,9 @@ export default class PubSubClient {
           break
 
         case 'publish':
-          console.log(`subscribe_topic_${payload.topic}`, payload.message)
+         // console.log(`subscribe_topic_${payload.topic}`, payload.message)
           this.showNoticiaPublicador(payload.message)
-          // let emit this to subscribers
+          
           break
 
         default:

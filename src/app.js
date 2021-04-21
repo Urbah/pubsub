@@ -1,7 +1,7 @@
 const express = require('express');
 let app = express();
-const path = require('path')
-const cors = require('cors')
+const path = require('path') 
+const cors = require('cors') 
 const WebSocketServer = require('ws')
 const session = require('express-session')
 const flash = require('connect-flash')
@@ -25,6 +25,8 @@ new Database().connect().then((db) => {
 }).catch((err) => {
   throw (err);
 });
+
+
 app.wss = new WebSocketServer.Server({
   server: app.server
 })
@@ -34,8 +36,8 @@ app.use(cors({
   exposedHeaders: '*',
 }))
 app.set("view engine", "ejs");
-app.use(express.static(path.join(__dirname, 'views')));// indicando donde buscaremos los archivos que necesitara el servidor
-app.set('views', path.join(__dirname + '/views'))// monstrandole donde buscar las vistas
+app.use(express.static(path.join(__dirname, 'views')));
+app.set('views', path.join(__dirname + '/views'))
 
 //middlewares
 app.use(express.urlencoded({ extended: false }));
@@ -45,6 +47,7 @@ app.use(session({
   resave: 'true',
   saveUninitialized: 'true'
 }));
+
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(flash())
@@ -63,7 +66,17 @@ app.use('/group',groupsRoutes);
 //routes 
 //index
 app.get("/", function (req, res) {
-  res.render("principal/no_autenticado");
+  let user = res.locals.user
+  if(!user){
+  console.log("es nulo", user)
+  Post.find({ $or: [ { topic: 'internacional' }, { topic: 'regional' } , { topic: 'nacional' } ] }, function (err, posts) {
+    if (err) 
+      console.log(err);
+    
+    else 
+        res.render("principal/no_autenticado", { posts: posts })            
+  }) 
+   }
 })
 
 app.get("/hidden", isLoggedIn, function (req, res) {
@@ -161,6 +174,7 @@ app.post("/register", async (req, res) => {
     })
   }
 })
+
 
 app.put("/modificar/:id", function (req, res) {
   var ajaxData = req.body
