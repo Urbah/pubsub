@@ -3,6 +3,7 @@ export default class PubSubClient {
 
     // Binding
     this.user = user
+<<<<<<< HEAD
     this.CambiarUsuario = this.CambiarUsuario.bind(this)
     this.reconnect = this.reconnect.bind(this)
     this.connect = this.connect.bind(this)
@@ -11,6 +12,9 @@ export default class PubSubClient {
     this.suscribirse = this.suscribirse.bind(this)
     this.publish = this.publish.bind(this)
     this.changeId = this.changeId.bind(this)
+=======
+    this._queue = []
+>>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
 
     // status of client connection
     this._connected = false
@@ -40,23 +44,44 @@ export default class PubSubClient {
     return this.user = data
   }
   reconnect() {
-
     const user = this.user;
-
     window.setInterval(() => {
+      if(!this._isReconnecting){
 
-      if (!user && !this._connected) {
-
-        console.log("try reconnecting...");
-
-        this.connect();
+        if (!user && !this._connected) {
+          this._isReconnecting = true
+          console.log("try reconnecting...");
+          this.connect();
+        }
       }
+    }, 1000)
 
-    }, 3000)
+
+      //Implement reconnect
+  /*reconnect () {
+    // if is reconnecting so do nothing
+    if (this._isReconnecting || this._connected) {
+      return
+    }
+    // Set timeout
+    this._isReconnecting = true
+    this._reconnectTimeout = setTimeout(() => {
+      console.log('Reconnecting....')
+      this.connect()
+    }, 2000)
+  }*/
+  //Begin connect to the server
   }
 
+<<<<<<< HEAD
 
  Desuscribirse(topic) {
+=======
+  //Un Subscribe a topic, no longer receive new message of the topic
+  unsubscribe(topic) {
+    const subscription = this._subscriptions.find((sub) => sub.topic === topic)
+    // need to tell to the server side that i dont want to receive message from this topic
+>>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
     this.send({
       action: 'unsubscribe',
       payload: {
@@ -65,6 +90,7 @@ export default class PubSubClient {
     })
   }
 
+<<<<<<< HEAD
   
   suscribirse(topic) {
     this.send({
@@ -74,6 +100,30 @@ export default class PubSubClient {
       },
     })
     
+=======
+  //Subscribir  a un cliente al topico
+  subscribe(topic, cb) {
+    //revisar mis subscripciones para no mandar nuevamente una subscripcion
+    const validarSubscripcion = this._subscriptions.find((sub)=>{
+      sub === topic
+    })
+    if(!validarSubscripcion){
+
+      this.send({
+        action: 'subscribe',
+        payload: {
+          topic: topic,
+        },
+      })
+      
+      
+      // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
+      this._subscriptions.push({
+        topic: topic,
+        callback: cb ? cb : null,
+      }) 
+    }
+>>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
   }
 
   
@@ -138,6 +188,19 @@ export default class PubSubClient {
     }
   }
 
+  runSubscriptionQueue () {
+
+    if (this._subscriptions.length) {
+      this._subscriptions.forEach((subscription) => {
+        this.send({
+          action: 'subscribe',
+          payload: {
+            topic: subscription.topic,
+          },
+        })
+      })
+    }
+  }
 
   showNoticiaPublicador(data) {
     $("#post_noticias_suscrito").prepend(
@@ -166,11 +229,13 @@ export default class PubSubClient {
     if (this._reconnectTimeout) {
       clearTimeout(this._reconnectTimeout)
     }
-
+    
     ws.onopen = () => {
      
       this._connected = true
       this._isReconnecting = false
+
+      this.runSubscriptionQueue()
 
       this.auth()
       console.log('Connected to the server')

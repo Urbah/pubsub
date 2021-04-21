@@ -1,0 +1,22 @@
+<%- include("../partials/header") %>
+<div class="container pt-2">
+    <h2><%= group.name %></h2>
+    <p><%= group.description %></p>
+    <div class="row">
+        <div class='col-8' width='80%' heigth='40%' id='contenedor-chat'>
+            Miembros
+            <ul>
+                <% if(group.members > 0){%>
+                    <%group.members.forEach((member)=>{ %>
+                        <li><%=member%></li> 
+                   <% })%>     
+                <% }else{ %>
+                    <li>no members<li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</div>
+<script type="module" src="../main.js"></script>
+<%- include("../partials/footer") %>
+    

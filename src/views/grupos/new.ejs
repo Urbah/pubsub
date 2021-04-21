@@ -1,0 +1,29 @@
+<%- include("../partials/header") %>
+<div class="container pt-2">
+    <% if(error){%>
+        <% error.forEach(function(e){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= e.text %>
+                <button type="button" class='close btn' data-dismiss='alert' aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+    <% })} %>
+
+    <form action="/group" method="POST" >
+        <div class="p-3">
+            <label for="Usuario" class="form-label">Nombre del grupo</label>
+            <input type="text" class="form-control" id="Usuario" name="name">
+          </div>
+          <div class="p-3">
+            <label for="Descripción" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="5"></textarea>
+          </div>
+        <div>
+          <div class="py-4">
+         <button type="submit" class="btn btn-primary px-5 py-2" >Crear grupo</button>
+        </div>
+    </form>
+</div>
+<%- include("../partials/footer") %>
+    

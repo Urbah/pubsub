@@ -12,7 +12,11 @@ const PubSub = require('./public/js/pubsub')
 const User = require('./models/User');
 const Database = require('./database')
 const Post = require('./models/Post');
+const Group = require('./models/Group');
 require('./config/passport')
+//routes
+const groupsRoutes = require('./routes/groups')
+
 
 app.server = http.createServer(app);
 new Database().connect().then((db) => {
@@ -58,7 +62,13 @@ app.use((req, res, next) => {
   next();
 })
 
+<<<<<<< HEAD
 
+=======
+app.use('/group',groupsRoutes);
+//routes 
+//index
+>>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
 app.get("/", function (req, res) {
   let user = res.locals.user
   if(!user){
@@ -85,7 +95,6 @@ app.get("/publicador", function (req, res) {
 app.get("/p", isLoggedIn, function (req, res) {
   let user = res.locals.user
   var objeto = []
-  let post_finales
   let topicos = user.topics
   topicos = user.topics
   if (res.locals.user && res.locals.user.role === "publish") {
@@ -102,9 +111,10 @@ app.get("/p", isLoggedIn, function (req, res) {
       }
       else {
         if (res.locals.user && res.locals.user.role === "reader") {
-          res.render("principal/autenticado", { id: user.username, posts: posts })
+          Group.find({},(err, groups)=>{
+            res.render("principal/autenticado", { id: user.username, posts: posts, groups: groups })
+          })
         }
-        post_finales = posts
       }
     })
   }
@@ -187,16 +197,6 @@ app.post("/noticia", function (req, res) {
   const post = new Post(req.body);
   console.log("app.js", req.body)
   post.save()
-})
-
-
-app.get("/creargrupo", function (req, res) {
-  res.render("authentication/crear_grupos")
-})
-
-
-app.get("/grupo", function (req, res) {
-  res.render("principal/grupos")
 })
 
 app.server.listen(3000, () => {

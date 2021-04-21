@@ -15,13 +15,6 @@ class PubSub {
 
     this.clients = new immutable.Map()
     this.subscription = new Subscription()
-
-    this.load = this.load.bind(this)
-    this.handleReceivedClientMessage = this.handleReceivedClientMessage.bind(this)
-    this.handleAddSubscription = this.handleAddSubscription.bind(this)
-    this.handleUnsubscribe = this.handleUnsubscribe.bind(this)
-    this.handlePublishMessage = this.handlePublishMessage.bind(this)
-    this.removeClient = this.removeClient.bind(this)
     this.load()
   }
   clients() {
@@ -40,9 +33,9 @@ class PubSub {
         role: 'reader',
         subscriptions: [],
       }
-    
       this.addClient(client)
 
+      // listen when receive message from client
 
       ws.on('message',
         (message) => this.handleReceivedClientMessage(client.id, message))
@@ -62,8 +55,6 @@ class PubSub {
 
      
     })
-
-
   }
 
   handleAddSubscription(topic, clientId) {

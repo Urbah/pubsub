@@ -27,8 +27,6 @@ var noticias = [
 $(function () {
   const store = new Store()
 
- 
-  
   $.ajax({
     url: '/dataUser',
     success: (datas) => {
