@@ -3,20 +3,16 @@ export default class PubSubClient {
 
     // Binding
     this.user = user
-<<<<<<< HEAD
     this.CambiarUsuario = this.CambiarUsuario.bind(this)
     this.reconnect = this.reconnect.bind(this)
     this.connect = this.connect.bind(this)
 
-    this.unsubscribe = this.unsubscribe.bind(this)
-    this.suscribirse = this.suscribirse.bind(this)
+    this.unsubscribe = this.desuscribirse.bind(this)
+    this.suscribirse = this.subscribe.bind(this)
     this.publish = this.publish.bind(this)
     this.changeId = this.changeId.bind(this)
-=======
     this._queue = []
->>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
 
-    // status of client connection
     this._connected = false
     this._ws = null
     this._id = null
@@ -24,16 +20,15 @@ export default class PubSubClient {
     //All subscriptions
     this._subscriptions = []
 
-    // store settings
     this._isReconnecting = false
 
     this._url = url
     this._options = options
 
     if (this._options && this._options.connect) {
-      // auto connect
+      // auto connecta
       this.reconnect()
-      //this.connect() 
+     
     }
   }
 
@@ -43,6 +38,8 @@ export default class PubSubClient {
     console.log(data)
     return this.user = data
   }
+
+
   reconnect() {
     const user = this.user;
     window.setInterval(() => {
@@ -50,38 +47,15 @@ export default class PubSubClient {
 
         if (!user && !this._connected) {
           this._isReconnecting = true
-          console.log("try reconnecting...");
+          console.log("reconnectando...");
           this.connect();
         }
       }
     }, 1000)
-
-
-      //Implement reconnect
-  /*reconnect () {
-    // if is reconnecting so do nothing
-    if (this._isReconnecting || this._connected) {
-      return
-    }
-    // Set timeout
-    this._isReconnecting = true
-    this._reconnectTimeout = setTimeout(() => {
-      console.log('Reconnecting....')
-      this.connect()
-    }, 2000)
-  }*/
-  //Begin connect to the server
   }
 
-<<<<<<< HEAD
 
- Desuscribirse(topic) {
-=======
-  //Un Subscribe a topic, no longer receive new message of the topic
-  unsubscribe(topic) {
-    const subscription = this._subscriptions.find((sub) => sub.topic === topic)
-    // need to tell to the server side that i dont want to receive message from this topic
->>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
+ desuscribirse(topic) {
     this.send({
       action: 'unsubscribe',
       payload: {
@@ -90,17 +64,7 @@ export default class PubSubClient {
     })
   }
 
-<<<<<<< HEAD
-  
-  suscribirse(topic) {
-    this.send({
-      action: 'suscribirse',
-      payload: {
-        topic: topic,
-      },
-    })
-    
-=======
+
   //Subscribir  a un cliente al topico
   subscribe(topic, cb) {
     //revisar mis subscripciones para no mandar nuevamente una subscripcion
@@ -108,7 +72,6 @@ export default class PubSubClient {
       sub === topic
     })
     if(!validarSubscripcion){
-
       this.send({
         action: 'subscribe',
         payload: {
@@ -123,7 +86,6 @@ export default class PubSubClient {
         callback: cb ? cb : null,
       }) 
     }
->>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
   }
 
   

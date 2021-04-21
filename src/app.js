@@ -13,7 +13,7 @@ const User = require('./models/User');
 const Database = require('./database')
 const Post = require('./models/Post');
 const Group = require('./models/Group');
-require('./config/passport')
+require('./config/usuario')
 //routes
 const groupsRoutes = require('./routes/groups')
 
@@ -62,17 +62,15 @@ app.use((req, res, next) => {
   next();
 })
 
-<<<<<<< HEAD
 
-=======
-app.use('/group',groupsRoutes);
+//app.use('/group',groupsRoutes);
 //routes 
 //index
->>>>>>> f6aec61739ae4a82b96967b1e956e7f8b8227881
+
 app.get("/", function (req, res) {
   let user = res.locals.user
   if(!user){
-  console.log("es nulo", user)
+  //console.log("es nulo", user)
   Post.find({ $or: [ { topic: 'internacional' }, { topic: 'regional' } , { topic: 'nacional' } ] }, function (err, posts) {
     if (err) 
       console.log(err);
@@ -135,6 +133,7 @@ app.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/')
 })
+
 app.get('/dataUser', function (req, res) {
   if (res.locals.user && res.locals.user.username) {
     let { username, topics, role, _id } = res.locals.user

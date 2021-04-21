@@ -103,10 +103,10 @@ class PubSub {
        
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
-    console.log("publish PublishMessage", subscription)
+       
 
-    subscriptions.forEach((subscription) => {
-      console.log("publish PublishMessage for each", subscription)
+       subscriptions.forEach((subscription) => {
+      //console.log("publish PublishMessage for each", subscription)
 
       const clientId = subscription.clientId
       const subscriptionType = subscription.type
