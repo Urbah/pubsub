@@ -25,9 +25,9 @@ class PubSub {
       let client = {
         id: id,
         ws: ws,
+        username: null,
         userId: null,
         authenticated: false,
-        role: 'reader',
         subscriptions: [],
       }
       this.addClient(client)
@@ -89,7 +89,7 @@ class PubSub {
  
 
   handlePublishMessage(topic, message, from, isBroadcast = false) {
-
+    
     let subscriptions = isBroadcast
        
       ? this.subscription.getSubscriptions(
@@ -97,10 +97,10 @@ class PubSub {
        
       : this.subscription.getSubscriptions(
         (subs) => subs.topic === topic)
-    console.log("publish PublishMessage", subscription)
+
 
     subscriptions.forEach((subscription) => {
-      console.log("publish PublishMessage for each", subscription)
+   
 
       const clientId = subscription.clientId
       const subscriptionType = subscription.type
@@ -145,6 +145,8 @@ class PubSub {
               this.app.db.model('User').findById(client.userId, (err, userfind) => {
                 if (userfind) {
                   client.authenticated = true
+                  client.username = userfind.username
+                  client.role = userfind.role
                 }
               })
             }
@@ -171,14 +173,34 @@ class PubSub {
           }
 
           case 'publish': {
-            if (client.authenticated) {
+            console.log('se ha mandado un publish')
+  
               const publishTopic = _.get(message, 'payload.topic', null)
               const publishMessage = _.get(message, 'payload.message')
+
+              console.log('el usuario esta auth')
               if (publishTopic) {
+                console.log('el usuario esta auth y tiene topico el msj')
                 const from = clientId
                 this.handlePublishMessage(publishTopic, publishMessage, from)
+                this.app.db.model('Post').create(
+                  {
+                    title:publishMessage.title,
+                    topic:publishTopic,
+                    description: publishMessage.description,
+                    created: publishMessage.created
+                  }, (err, post)=>{
+                    if (err){
+                      console.log(err)
+                    } else{
+                      post.author.id = client.userId
+                      post.author.username = client.username
+                      post.save()
+                    }
+                  }
+                )
               }
-            }
+        
             break;
           }
 

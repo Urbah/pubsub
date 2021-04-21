@@ -20,6 +20,7 @@ router.get('/:id', (req, res)=>{
 	})
 
 });
+
 router.post("/", function(req, res){
 	Group.create(req.body, (err, group)=>{
 		if(err){

@@ -77,11 +77,13 @@ export default class PubSubClient {
   //Subscribir  a un cliente al topico
   subscribe(topic, cb) {
     //revisar mis subscripciones para no mandar nuevamente una subscripcion
-    const validarSubscripcion = this._subscriptions.find((sub)=>{
+    const validarSuscripcion = this._subscriptions.find((sub)=>{
+      console.log('sub',sub)
+      console.log('topic',topic)
       sub === topic
     })
-    if(!validarSubscripcion){
-
+    if(!validarSuscripcion){
+      console.log('validar suscripcion', validarSuscripcion)
       this.send({
         action: 'subscribe',
         payload: {
@@ -89,12 +91,11 @@ export default class PubSubClient {
         },
       })
       
-      
       // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
-      this._subscriptions.push({
-        topic: topic,
-        callback: cb ? cb : null,
-      }) 
+      this._subscriptions.push(
+        topic
+        //callback: cb ? cb : null,
+      ) 
     }
   }
 
@@ -153,6 +154,11 @@ export default class PubSubClient {
       message = JSON.stringify(message)
       this._ws.send(message)
     } else {
+      console.log('se ha agregado a la cola', message)
+      this._queue.push({
+        type: 'message',
+        payload: message,
+      })
     }
   }
   auth() {
@@ -187,7 +193,27 @@ export default class PubSubClient {
     }
   }
 
+  runQueue () {
+    console.log('paso por runqueue')
+    console.log('length queue', this._queue.length)
+    console.log('queue', this._queue)
+    if (this._queue.length) {
+      this._queue.forEach((q, index) => {
+        switch (q.type) {
+          case 'message':
+            this.send(q.payload)
+            break
+          default:
+            break
+        }
+        // remove queue
+        delete this._queue[index]
+      })
+    }
+  }
+
   showNoticiaPublicador(data) {
+    console.log('---------------------------------',data)
     $("#post_noticias_suscrito").prepend(
       ` <div class="row">
                   <div class="col-12">
@@ -196,8 +222,8 @@ export default class PubSubClient {
                             <h5 class="card-title pb-1">` + data.title + ` </h5>
                             <h6 class="card-subtitle mb-2 text-muted">` + data.topic + `</h6>
                             <p class="card-text">` + data.description + `</p>
+                            <p>Fecha de publicación: `+data.created.fecha   +', Fecha de publicación: '+data.created.hora  +`</p>
                           </div>
-                          
                         </div>
                   </div>
                </div>
@@ -221,6 +247,7 @@ export default class PubSubClient {
       this._isReconnecting = false
 
       this.runSubscriptionQueue()
+      this.runQueue()
 
       this.auth()
       console.log('Connected to the server')

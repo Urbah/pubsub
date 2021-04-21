@@ -8,10 +8,7 @@
             <div class="row" >
                 <div class="pt-3">
                     <h4 class=""> Grupo <a type="button" class="btn btn-sm" id="crear_grupo"  href="/creargrupo" ><i class="bi 2x bi-plus-circle p-1"></i></a></h4>
-                </div>
-                    <div class="container" id="grupos">
-                        <h5 class=""> <a type="button" class="btn btn-link" href="/grupo" style="text-decoration: none;color: #007bff;" >Grupo uno </a></h5>
-                    </div>
+                </div> 
             </div>
             <div class="row">
                 <div class="pt-3">
@@ -61,6 +58,7 @@
                           <h5 class="card-title pb-1"><%= post.title  %></h5>
                           <h6 class="card-subtitle mb-2 text-muted"><%= post.topic  %></h6>
                           <p class="card-text"><%= post.description %></p>
+                          <p>Fecha de publicación: <%=  post.created.fecha %>,  Hora de publicación: <%= post.created.hora %> </p>
                         </div>
                       </div>
                      <% })  %>
@@ -73,15 +71,6 @@
                           <p class="card-text text-center">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
                                sunt in culpa qui officia deserunt mollit anim id est laborum</p>
                         </div>
-                      
-                      </div>
-
-                      <div>
-                          <h2>Groups</h2>
-                          <% groups.forEach((group)=>{ %>
-                                <p><%= group.name %>, <%= group.author.username %></p>
-                                <a href='./group/<%=group._id %>'>unirse</a>>
-                           <% }) %>
                       </div>
                 </div>
              </div>

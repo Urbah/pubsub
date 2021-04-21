@@ -14,6 +14,7 @@
                     <h5 class="card-title pb-1"><%= post.title  %></h5>
                     <h6 class="card-subtitle mb-2 text-muted"><%= post.topic  %></h6>
                     <p class="card-text"><%= post.description %></p>
+                    <p>Fecha de publicación: <%=  post.created.fecha %>,  Hora de publicación: <%= post.created.hora %> </p>
                   </div>
                 </div>
                <% })  %>

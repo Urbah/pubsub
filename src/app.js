@@ -74,7 +74,7 @@ app.get("/", function (req, res) {
       console.log(err);
     
     else 
-        res.render("principal/no_autenticado", { posts: posts })            
+        res.render("principal/no_autenticado", { posts: posts.reverse() })            
   }) 
    }
 })
@@ -112,7 +112,8 @@ app.get("/p", isLoggedIn, function (req, res) {
       else {
         if (res.locals.user && res.locals.user.role === "reader") {
           Group.find({},(err, groups)=>{
-            res.render("principal/autenticado", { id: user.username, posts: posts, groups: groups })
+            console.log('-----------------------------',posts)
+            res.render("principal/autenticado", { id: user.username, posts: posts.reverse()})
           })
         }
       }
@@ -175,7 +176,6 @@ app.post("/register", async (req, res) => {
   }
 })
 
-
 app.put("/modificar/:id", function (req, res) {
   var ajaxData = req.body
   console.log(req.body)
@@ -190,13 +190,6 @@ app.put("/modificar/:id", function (req, res) {
     }
     user.save();
   })
-})
-
-// crear una noticia
-app.post("/noticia", function (req, res) {
-  const post = new Post(req.body);
-  console.log("app.js", req.body)
-  post.save()
 })
 
 app.server.listen(3000, () => {

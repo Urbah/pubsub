@@ -7,20 +7,44 @@ var noticias = [
     "title": "Atencion noticia regional",
     "topic": "regional",
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "nombre_publicador": "Luis Sandoval"
+    "nombre_publicador": "Luis Sandoval",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
   },
   {
     "title": "Ahora en las noticias Nacionales",
     "topic": "nacional",
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "nombre_publicador": "Maria Urbaneja"
+    "nombre_publicador": "Maria Urbaneja",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
   },
   {
     "title": " Las noticias internacional estan de moda",
     "topic": "internacional",
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur",
-    "nombre_publicador": "Rodrigo Morales"
+    "nombre_publicador": "Rodrigo Morales",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
   },
+  {
+    "title": "Atencion noticia regional 2",
+    "topic": "regional",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "nombre_publicador": "Luis Sandoval",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
+  },
+  {
+    "title": "Ahora en las noticias Nacionales 2",
+    "topic": "nacional",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "nombre_publicador": "Maria Urbaneja",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
+  },
+  {
+    "title": " Las noticias internacional estan de moda 2",
+    "topic": "internacional",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur",
+    "nombre_publicador": "Rodrigo Morales",
+    "created":{fecha:'21/04/2021', hora:'00:00:00'}
+  }
 ]
 
 
@@ -46,15 +70,6 @@ $(function () {
     }
   })
 
-  
-  function guardarNoticia(data) {
-    $.ajax({
-      url: `/noticia`,
-      type: "POST",
-      data: data,
-      success: console.log("ok")
-    })
-  }
   
   function ajax(parametro, topico) {
     $.ajax({
@@ -111,6 +126,9 @@ $(function () {
   });
 
   $("#btn_publicador").on("click", function (event) {
+    let hoy = new Date()
+    let fecha = hoy.getDate() + '-' + (hoy.getMonth()+1)+'-'+hoy.getFullYear()
+    let hora = hoy.getHours()+':'+hoy.getMinutes()+':'+hoy.getSeconds()
 
     const $titulo = $('#titulo');
     const $descripcion = $('#descripcion');
@@ -119,19 +137,21 @@ $(function () {
     const message = {
       title: $titulo.val(),
       description: $descripcion.val(),
-      topic: $tipo.val()
+      topic: $tipo.val(),
+      created : {
+        fecha: fecha,
+        hora: hora
+      }
     }
 
     event.preventDefault();
     store.pubSub.publish($tipo.val(), message)
-    guardarNoticia(message)
   });
 
   function randomNoticiaPublicador(data) {
     var noticias = data;
-    var index = Math.floor(Math.random() * 3);
+    var index = Math.floor(Math.random() * 6);
     store.pubSub.publish(noticias[index].topic, noticias[index])
-    guardarNoticia(noticias[index])
     console.log(noticias[index].topic, noticias[index])
   }
 
