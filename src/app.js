@@ -63,10 +63,6 @@ app.use((req, res, next) => {
 })
 
 
-//app.use('/group',groupsRoutes);
-//routes 
-//index
-
 app.get("/", function (req, res) {
   let user = res.locals.user
   if(!user){
@@ -168,7 +164,6 @@ app.post("/register", async (req, res) => {
   } else {
     const newUser = new User({ username, password, role, topics });
     await newUser.save();
-   // req.flash('success_msg', 'User Register Successfully');
     passport.authenticate("local")(req, res, function () {
       res.redirect("/p")
     })
