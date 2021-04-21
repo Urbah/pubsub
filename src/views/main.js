@@ -35,7 +35,7 @@ $(function () {
       console.log('nueva data')
       console.log(datas)
       user = datas
-      store.changeUser(user)
+      store.CambiarUsuario(user)
     }
   })
   
@@ -71,7 +71,7 @@ $(function () {
     topics.forEach(e => {
       console.log(e)
       store.pubSub.subscribe(e, (message) => {
-        console.log(`Got message from topic ${e}`, message)
+        console.log(`recibi un mensaje por topico ${e}`, message)
       })
     })
     cambiarEstadoInicial(topics)
@@ -90,9 +90,7 @@ $(function () {
     }
   }
 
-  $("#help").click(function () {
-    console.log("tienes que borar esta funcion")
-  })
+
   $(".estado").click(function () {
     var estado = $(this).text();
     const nombre_topico = $(this).val()
@@ -145,6 +143,6 @@ $(function () {
     clearInterval(timer);
   });
   
-  //use pubsub in terminal
+  
   window.ps = store.pubSub
 })

@@ -8,8 +8,8 @@ export default class Store {
             reconnect: true,
         }, this.user)
     }
-    changeUser(user) {
+    CambiarUsuario(user) {
         this.user = user
-        this.pubSub.changeUser(this.user)
+        this.pubSub.CambiarUsuario(this.user)
     }
 }

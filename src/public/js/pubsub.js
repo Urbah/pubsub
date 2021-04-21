@@ -4,6 +4,9 @@ const uuid = require('uuid')
 const Subscription = require('./subscription')
 const Post = require('../../models/Post')
 const { Mongoose } = require('mongoose')
+const events = require('events')
+const EventEmitter = require('events')
+const eventEmiter = new events.EventEmitter(); 
 
 class PubSub {
 
@@ -46,15 +49,18 @@ class PubSub {
 
       ws.on('close', () => {
         console.log('Client is disconnected')
-        // Find user subscriptions and remove
+       
         const userSubscriptions = this.subscription.getSubscriptions(
           (sub) => sub.clientId === id)
         userSubscriptions.forEach((sub) => {
           this.subscription.remove(sub.id)
         })
-        // now let remove client
+        
         this.removeClient(id)
       })
+
+
+     
     })
 
 
@@ -113,10 +119,8 @@ class PubSub {
 
       const clientId = subscription.clientId
       const subscriptionType = subscription.type
-     // console.log("subscriptionType", subscriptionType)
-     // console.log('Client id of subscription', clientId, subscription)
-
-      
+     
+    
       if (subscriptionType === 'ws') {
         this.send(clientId, {
           action: 'publish',
@@ -128,6 +132,7 @@ class PubSub {
       }
     })
   }
+
 
 
   handleReceivedClientMessage(clientId, message) {
@@ -145,7 +150,6 @@ class PubSub {
           }
 
           case 'auth': {
-            //Client Auth is asking for his inf
             const userId = _.get(message, 'payload.userId', null)
             client.userId = userId
             console.log('client.userid', client.userId)
@@ -191,19 +195,6 @@ class PubSub {
             break;
           }
 
-          /*
-          case 'broadcast': {
-            if (client.authenticated) {
-              const broadcastTopicName = _.get(message, 'payload.topic', null)
-              const broadcastMessage = _.get(message, 'payload.message')
-              if (broadcastTopicName) {
-                this.handlePublishMessage(broadcastTopicName, broadcastMessage,
-                  clientId, true)
-              }
-            }
-            break;
-          }
-          */
           default: {
             break;
           }
@@ -269,4 +260,3 @@ module.exports = PubSub
 
 
 
-// y si colocamos la funcion de addclients relacionado a las secciones?
