@@ -9,17 +9,15 @@ passport.use(
       usernameField: "username",
     },
     async (username, password, done) => {
-      // Match Email's User
       const user = await User.findOne({ username: username });
       if (!user) {
-        return done(null, false, { message: "Not User found." });
+        return done(null, false, { message: "Usuario no encontrado." });
       } else {
-        // Match Password's User
         const match = user.password === password;
         if (match) {
           return done(null, user);
         } else {
-          return done(null, false, { message: "Incorrect Password." });
+          return done(null, false, { message: "contraseña incorrecta" });
         }
       }
     }

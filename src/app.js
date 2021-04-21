@@ -13,7 +13,7 @@ const User = require('./models/User');
 const Database = require('./database')
 const Post = require('./models/Post');
 const Group = require('./models/Group');
-require('./config/passport')
+require('./config/usuario')
 //routes
 const groupsRoutes = require('./routes/groups')
 
@@ -39,7 +39,7 @@ app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, 'views')));
 app.set('views', path.join(__dirname + '/views'))
 
-//middlewares
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(session({
@@ -52,7 +52,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(flash())
 
-//Global variables de app
+
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg')
   res.locals.error_msg = req.flash('error_msg')
@@ -62,13 +62,15 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use('/group',groupsRoutes);
+
+//app.use('/group',groupsRoutes);
 //routes 
 //index
+
 app.get("/", function (req, res) {
   let user = res.locals.user
   if(!user){
-  console.log("es nulo", user)
+  //console.log("es nulo", user)
   Post.find({ $or: [ { topic: 'internacional' }, { topic: 'regional' } , { topic: 'nacional' } ] }, function (err, posts) {
     if (err) 
       console.log(err);
@@ -79,11 +81,7 @@ app.get("/", function (req, res) {
    }
 })
 
-app.get("/hidden", isLoggedIn, function (req, res) {
-  res.render("index");
-})
 
-//principal views
 app.get("/autenticado", function (req, res) {
   res.render("principal/autenticado")
 })
@@ -121,8 +119,7 @@ app.get("/p", isLoggedIn, function (req, res) {
   }
 })
 
-//auth
-//login
+
 app.get("/login", function (req, res) {
   res.render("authentication/login")
 })
@@ -137,6 +134,7 @@ app.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/')
 })
+
 app.get('/dataUser', function (req, res) {
   if (res.locals.user && res.locals.user.username) {
     let { username, topics, role, _id } = res.locals.user
@@ -148,7 +146,8 @@ app.get('/dataUser', function (req, res) {
 app.get('/data', function (req, res) {
   res.json(res.locals.user)
 })
-//register
+
+
 app.get("/register", function (req, res) {
   res.render("authentication/register", { error: false })
 })
@@ -157,10 +156,10 @@ app.post("/register", async (req, res) => {
   const { username, password, role, topics } = req.body
   const error = [];
   if (!username) {
-    error.push({ text: 'Please write a username' })
+    error.push({ text: 'Ingresa un nombre de usuario' })
   }
   if (!password) {
-    error.push({ text: 'Please write a password' })
+    error.push({ text: 'Ingresa un password' })
   }
   if (error.length > 0) {
     res.render("authentication/register", {
@@ -169,7 +168,7 @@ app.post("/register", async (req, res) => {
   } else {
     const newUser = new User({ username, password, role, topics });
     await newUser.save();
-    req.flash('success_msg', 'User Register Successfully');
+   // req.flash('success_msg', 'User Register Successfully');
     passport.authenticate("local")(req, res, function () {
       res.redirect("/p")
     })

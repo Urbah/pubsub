@@ -3,9 +3,16 @@ export default class PubSubClient {
 
     // Binding
     this.user = user
+    this.CambiarUsuario = this.CambiarUsuario.bind(this)
+    this.reconnect = this.reconnect.bind(this)
+    this.connect = this.connect.bind(this)
+
+    this.unsubscribe = this.desuscribirse.bind(this)
+    this.suscribirse = this.subscribe.bind(this)
+    this.publish = this.publish.bind(this)
+    this.changeId = this.changeId.bind(this)
     this._queue = []
 
-    // status of client connection
     this._connected = false
     this._ws = null
     this._id = null
@@ -13,25 +20,26 @@ export default class PubSubClient {
     //All subscriptions
     this._subscriptions = []
 
-    // store settings
     this._isReconnecting = false
 
     this._url = url
     this._options = options
 
     if (this._options && this._options.connect) {
-      // auto connect
+      // auto connecta
       this.reconnect()
-      //this.connect() 
+     
     }
   }
 
   
-  changeUser(data) {
+  CambiarUsuario(data) {
     console.log('se ha ejecutadoo el cambio de user')
     console.log(data)
     return this.user = data
   }
+
+
   reconnect() {
     const user = this.user;
     window.setInterval(() => {
@@ -39,33 +47,15 @@ export default class PubSubClient {
 
         if (!user && !this._connected) {
           this._isReconnecting = true
-          console.log("try reconnecting...");
+          console.log("reconnectando...");
           this.connect();
         }
       }
     }, 1000)
-
-
-      //Implement reconnect
-  /*reconnect () {
-    // if is reconnecting so do nothing
-    if (this._isReconnecting || this._connected) {
-      return
-    }
-    // Set timeout
-    this._isReconnecting = true
-    this._reconnectTimeout = setTimeout(() => {
-      console.log('Reconnecting....')
-      this.connect()
-    }, 2000)
-  }*/
-  //Begin connect to the server
   }
 
-  //Un Subscribe a topic, no longer receive new message of the topic
-  unsubscribe(topic) {
-    const subscription = this._subscriptions.find((sub) => sub.topic === topic)
-    // need to tell to the server side that i dont want to receive message from this topic
+
+ desuscribirse(topic) {
     this.send({
       action: 'unsubscribe',
       payload: {
@@ -73,6 +63,7 @@ export default class PubSubClient {
       },
     })
   }
+
 
   //Subscribir  a un cliente al topico
   subscribe(topic, cb) {
@@ -82,8 +73,8 @@ export default class PubSubClient {
       console.log('topic',topic)
       sub === topic
     })
+  
     if(!validarSuscripcion){
-      console.log('validar suscripcion', validarSuscripcion)
       this.send({
         action: 'subscribe',
         payload: {
@@ -94,7 +85,7 @@ export default class PubSubClient {
       // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
       this._subscriptions.push(
         topic
-        //callback: cb ? cb : null,
+        
       ) 
     }
   }
@@ -121,23 +112,12 @@ export default class PubSubClient {
     this._id = id
   }
 
-  //Publish a message to the topic and send to everyone, not me
-  broadcast(topic, message) {
-    this.send({
-      action: 'broadcast',
-      payload: {
-        topic: topic,
-        message: message,
-      },
-    })
-  }
-
-  //Return client conneciton ID
+ 
+ 
   id() {
     return this._id
   }
 
-  //Convert string to JSON
   stringToJson(message) {
     try {
       message = JSON.parse(message)
@@ -148,19 +128,19 @@ export default class PubSubClient {
     return message
   }
 
-  // Send a message to the server
   send(message) {
     if (this._connected === true && this._ws.readyState === 1) {
       message = JSON.stringify(message)
       this._ws.send(message)
     } else {
-      console.log('se ha agregado a la cola', message)
+     // console.log('se ha agregado a la cola', message)
       this._queue.push({
         type: 'message',
         payload: message,
       })
     }
-  }
+    } 
+  
   auth() {
     console.log(this.user)
     const user = this.user
@@ -242,7 +222,7 @@ export default class PubSubClient {
     }
     
     ws.onopen = () => {
-      // change status of connected
+     
       this._connected = true
       this._isReconnecting = false
 
@@ -263,7 +243,7 @@ export default class PubSubClient {
       switch (action) {
         case 'noAuth':
           this._id = payload.id
-          this.subscribe("generales")
+          this.suscribirse("generales")
           
           console.log('payload.id ' + payload.id + " ")
           break
@@ -275,7 +255,6 @@ export default class PubSubClient {
           break
 
         case 'publish':
-         // console.log(`subscribe_topic_${payload.topic}`, payload.message)
           this.showNoticiaPublicador(payload.message)
           
           break
@@ -297,13 +276,5 @@ export default class PubSubClient {
       this.reconnect()
     }
   }
-  //Disconnect client
-  /*disconnect () {
-    if (this._listeners.length) {
-      this._listeners.forEach((listener) => {
- 
-        listener.remove()
-      })
-    }
-  }*/
+
 }
