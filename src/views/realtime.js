@@ -82,7 +82,6 @@ export default class PubSubClient {
         },
       })
       
-      // let store this into subscriptions for later when use reconnect and we need to run queque to subscribe again
       this._subscriptions.push(
         topic
         
@@ -101,18 +100,7 @@ export default class PubSubClient {
     })
   }
 
-  changeId(id, newId) {
-    this.send({
-      action: 'changeId',
-      payload: {
-        id: id,
-        newId: newId
-      },
-    })
-    this._id = id
-  }
 
- 
  
   id() {
     return this._id
